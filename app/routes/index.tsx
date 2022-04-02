@@ -1,6 +1,13 @@
 import { Link } from "@remix-run/react";
+import { LoaderFunction } from "@remix-run/node";
+import { requireUserId } from "~/session.server";
 
 import { useOptionalUser } from "~/utils";
+
+export const loader: LoaderFunction = async ({ request, params }) => {
+  await requireUserId(request);
+  return {};
+};
 
 export default function Index() {
   const user = useOptionalUser();
