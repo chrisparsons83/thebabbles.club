@@ -62,6 +62,15 @@ export async function requireUser(request: Request) {
   throw await logout(request);
 }
 
+export async function requireActiveUser(request: Request) {
+  const user = await requireUser(request);
+
+  if (!user.isActive) {
+    throw await logout(request);
+  }
+  return user;
+}
+
 export async function createUserSession({
   request,
   userId,
