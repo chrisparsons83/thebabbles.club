@@ -16,6 +16,8 @@ model User {
 
   password Password?
   notes    Note[]
+
+  isActive Boolean @default(false)
 }
 
 model Password {
