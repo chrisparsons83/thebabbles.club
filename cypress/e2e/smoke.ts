@@ -19,8 +19,7 @@ describe("smoke tests", () => {
     cy.findByLabelText(/password/i).type(loginForm.password);
     cy.findByRole("button", { name: /create account/i }).click();
 
-    cy.findByRole("link", { name: /notes/i }).click();
-    cy.findByRole("button", { name: /logout/i }).click();
+    cy.get("h1").contains("You have registered!");
   });
 
   it("should allow you to make a note", () => {
@@ -29,9 +28,8 @@ describe("smoke tests", () => {
       body: faker.lorem.sentences(1),
     };
     cy.login();
-    cy.visit("/");
 
-    cy.findByRole("link", { name: /notes/i }).click();
+    cy.visit("/notes");
     cy.findByText("No notes yet");
 
     cy.findByRole("link", { name: /\+ new note/i }).click();
