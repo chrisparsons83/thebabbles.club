@@ -11,10 +11,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
 
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
+import Navbar from "./components/navbar";
+import { User } from "@prisma/client";
 
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
@@ -27,7 +30,7 @@ export const meta: MetaFunction = () => ({
 });
 
 type LoaderData = {
-  user: Awaited<ReturnType<typeof getUser>>;
+  user: User | null;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -37,6 +40,8 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function App() {
+  const { user } = useLoaderData<LoaderData>();
+
   return (
     <html lang="en" className="h-full">
       <head>
@@ -44,7 +49,10 @@ export default function App() {
         <Links />
       </head>
       <body className="h-full">
-        <Outlet />
+        <div className="px-4 md:container md:mx-auto">
+          <Navbar user={user} />
+          <Outlet />
+        </div>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

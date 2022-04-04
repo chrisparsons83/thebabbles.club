@@ -27,3 +27,21 @@ export function getPost({ id }: Pick<Post, "id">) {
     where: { id },
   });
 }
+
+export function getPosts(take = 10, previousCursor?: string) {
+  let skip = 0;
+  let cursor;
+  if (previousCursor) {
+    skip = 1;
+    cursor = {
+      id: previousCursor,
+    };
+  }
+
+  return prisma.post.findMany({
+    take,
+    skip,
+    cursor,
+    orderBy: { createdAt: "desc" },
+  });
+}
