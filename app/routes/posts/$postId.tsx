@@ -1,12 +1,13 @@
 import { json, LoaderFunction } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { requireActiveUser } from "~/session.server";
-import type { Post } from "~/models/post.server";
+import type { PostWithMessages } from "~/models/post.server";
 import { getPost } from "~/models/post.server";
-import { useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useEffect } from "react";
 
 type LoaderData = {
-  post: Post;
+  post: PostWithMessages;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -22,11 +23,30 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function PostPage() {
   const data = useLoaderData() as LoaderData;
+  const message = useFetcher();
+
+  useEffect((): void => {
+    if (message.type === "done" && message.data.message) {
+      console.log("done!");
+    }
+  }, [message]);
+
+  if (!data.post) {
+    return null;
+  }
 
   return (
     <div>
       <h1>{data.post.title}</h1>
       <img src={data.post.gif} alt={data.post.title} />
+      <message.Form action="/messages/new" method="post">
+        <textarea name="text" placeholder="Add a comment" />
+        <input type="hidden" value={data.post.id} name="postId" />
+        <button type="submit">Post</button>
+      </message.Form>
+      {data.post.messages.map((message) => (
+        <p key={message.id}>{message.text}</p>
+      ))}
     </div>
   );
 }

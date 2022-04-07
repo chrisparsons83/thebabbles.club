@@ -1,6 +1,8 @@
-import type { User, Post } from "@prisma/client";
+import type { User, Post, Prisma } from "@prisma/client";
 import { prisma } from "~/db.server";
 export type { Post } from "@prisma/client";
+
+export type PostWithMessages = Prisma.PromiseReturnType<typeof getPost>;
 
 export function createNote({
   title,
@@ -25,6 +27,11 @@ export function createNote({
 export function getPost({ id }: Pick<Post, "id">) {
   return prisma.post.findFirst({
     where: { id },
+    include: {
+      messages: {
+        orderBy: { createdAt: "desc" },
+      },
+    },
   });
 }
 
