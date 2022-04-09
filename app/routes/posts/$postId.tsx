@@ -5,6 +5,7 @@ import type { PostWithMessages } from "~/models/post.server";
 import { createMessage, Message } from "~/models/message.server";
 import { getPost } from "~/models/post.server";
 import { useFetcher, useLoaderData } from "@remix-run/react";
+import MessageComponent from "~/components/message";
 
 type LoaderData = {
   post: PostWithMessages;
@@ -93,7 +94,7 @@ export default function PostPage() {
         <button type="submit">Post</button>
       </fetcher.Form>
       {data.post.messages.map((message) => (
-        <p key={message.id}>{message.text}</p>
+        <MessageComponent message={message} depth={0} key={message.id} />
       ))}
     </div>
   );

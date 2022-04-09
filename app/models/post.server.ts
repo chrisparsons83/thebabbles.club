@@ -30,6 +30,9 @@ export function getPost({ id }: Pick<Post, "id">) {
     include: {
       messages: {
         orderBy: { createdAt: "desc" },
+        include: {
+          user: true,
+        },
       },
     },
   });
