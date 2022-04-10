@@ -1,8 +1,11 @@
 import { DateTime } from "luxon";
 import { Message } from "~/models/message.server";
+import { User } from "~/models/user.server";
 
 type Props = {
-  message: Message;
+  message: Message & {
+    user: User;
+  };
   depth: number;
 };
 
@@ -20,7 +23,7 @@ export default function MessageComponent({ message }: Props) {
             />
           </div>
         </div>
-        <span className="font-bold">Person's name</span>{" "}
+        <span className="font-bold">{message.user.username}</span>{" "}
         <time className="text-neutral-200 italic" dateTime={createdAt.toISO()}>
           {createdAt.toRelative()}
         </time>
