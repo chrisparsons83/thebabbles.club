@@ -10,7 +10,7 @@ export default function Navbar({ user }: Props) {
 
   return (
     <div className="mb-4 bg-primary py-2">
-      <div className="flex md:container md:mx-auto">
+      <div className="flex px-4 md:container md:mx-auto">
         <div className="text-bold grow text-2xl">
           <Link to="/">The Babbles</Link>
         </div>
