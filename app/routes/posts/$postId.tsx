@@ -86,12 +86,23 @@ export default function PostPage() {
 
   return (
     <div>
-      <h1>{data.post.title}</h1>
-      <img src={data.post.gif} alt={data.post.title} />
-      <fetcher.Form method="post">
-        <textarea name="text" placeholder="Add a comment" />
+      <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
+      <img src={data.post.gif} alt={data.post.title} className="mb-4" />
+      <fetcher.Form method="post" className="mb-8">
+        <div>
+          <label htmlFor="text" className="form-control">
+            Message:
+            <textarea
+              name="text"
+              placeholder="Add a comment"
+              className="textarea textarea-bordered mt-1"
+            />
+          </label>
+        </div>
         <input type="hidden" value={data.post.id} name="postId" />
-        <button type="submit">Post</button>
+        <button className="btn btn-primary mt-4 rounded" type="submit">
+          Post
+        </button>
       </fetcher.Form>
       {data.post.messages.map((message) => (
         <MessageComponent message={message} depth={0} key={message.id} />

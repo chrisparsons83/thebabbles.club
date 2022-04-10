@@ -43,14 +43,14 @@ export default function App() {
   const { user } = useLoaderData<LoaderData>();
 
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" data-theme="business">
       <head>
         <Meta />
         <Links />
       </head>
       <body className="h-full">
+        <Navbar user={user} />
         <div className="px-4 md:container md:mx-auto">
-          <Navbar user={user} />
           <Outlet />
         </div>
         <ScrollRestoration />
