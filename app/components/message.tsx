@@ -29,6 +29,7 @@ export default function MessageComponent({ message }: Props) {
         </time>
       </div>
       <div className="pl-8">{message.text}</div>
+      <div className="pl-8">Like | Reply</div>
     </div>
   );
 }
