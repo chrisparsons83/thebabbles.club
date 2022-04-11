@@ -9,7 +9,11 @@ import * as React from "react";
 
 import { getUserId, createUserSession } from "~/session.server";
 
-import { createUser, getUserByEmail } from "~/models/user.server";
+import {
+  createUser,
+  getUserByEmail,
+  getUserByUsername,
+} from "~/models/user.server";
 import { validateEmail } from "~/utils";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -22,6 +26,7 @@ interface ActionData {
   errors: {
     email?: string;
     password?: string;
+    username?: string;
   };
 }
 
@@ -29,10 +34,18 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
+  const username = formData.get("username");
 
   if (!validateEmail(email)) {
     return json<ActionData>(
       { errors: { email: "Email is invalid" } },
+      { status: 400 }
+    );
+  }
+
+  if (typeof username !== "string") {
+    return json<ActionData>(
+      { errors: { username: "Username is required" } },
       { status: 400 }
     );
   }
@@ -59,7 +72,15 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const user = await createUser(email, password);
+  const existingUserName = await getUserByUsername(username);
+  if (existingUserName) {
+    return json<ActionData>(
+      { errors: { username: "A user already exists with this username" } },
+      { status: 400 }
+    );
+  }
+
+  const user = await createUser(email, password, username);
 
   return createUserSession({
     request,
@@ -79,6 +100,7 @@ export default function Join() {
   const [searchParams] = useSearchParams();
   const actionData = useActionData() as ActionData;
   const emailRef = React.useRef<HTMLInputElement>(null);
+  const usernameRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -94,10 +116,31 @@ export default function Join() {
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
           <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="username" className="block text-sm font-medium">
+              Username
+            </label>
+            <div className="mt-1">
+              <input
+                ref={usernameRef}
+                id="username"
+                required
+                autoFocus={true}
+                name="username"
+                type="text"
+                aria-invalid={actionData?.errors?.username ? true : undefined}
+                aria-describedby="username-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.errors?.username && (
+                <div className="pt-1 text-red-700" id="username-error">
+                  {actionData.errors.username}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium">
               Email address
             </label>
             <div className="mt-1">
@@ -105,7 +148,6 @@ export default function Join() {
                 ref={emailRef}
                 id="email"
                 required
-                autoFocus={true}
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -122,10 +164,7 @@ export default function Join() {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="password" className="block text-sm font-medium">
               Password
             </label>
             <div className="mt-1">
@@ -149,7 +188,7 @@ export default function Join() {
 
           <button
             type="submit"
-            className="w-full rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+            className="btn btn-primary w-full rounded py-2 px-4"
           >
             Create Account
           </button>
