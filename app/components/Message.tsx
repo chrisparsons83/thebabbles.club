@@ -22,8 +22,6 @@ export default function MessageComponent({
   const createdAt = DateTime.fromISO(message.createdAt.toString());
   const [showMessageForm, setShowMessageForm] = useState(false);
 
-  console.log({ childMessages });
-
   const toggleForm = () => {
     setShowMessageForm((prevState) => !prevState);
   };
