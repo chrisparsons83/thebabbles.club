@@ -1,6 +1,8 @@
 import { DateTime } from "luxon";
+import { useState } from "react";
 import { Message } from "~/models/message.server";
 import { User } from "~/models/user.server";
+import MessageForm from "./MessageForm";
 
 type Props = {
   message: Message & {
@@ -11,6 +13,11 @@ type Props = {
 
 export default function MessageComponent({ message }: Props) {
   const createdAt = DateTime.fromISO(message.createdAt.toString());
+  const [showMessageForm, setShowMessageForm] = useState(false);
+
+  const toggleForm = () => {
+    setShowMessageForm((prevState) => !prevState);
+  };
 
   return (
     <div className="py-4">
@@ -29,7 +36,10 @@ export default function MessageComponent({ message }: Props) {
         </time>
       </div>
       <div className="pl-8">{message.text}</div>
-      <div className="pl-8">Like | Reply</div>
+      <div className="pl-8">
+        Like | <button onClick={toggleForm}>Reply</button>
+      </div>
+      {showMessageForm && <MessageForm id={message.postId} />}
     </div>
   );
 }
