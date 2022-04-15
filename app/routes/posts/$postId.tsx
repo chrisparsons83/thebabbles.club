@@ -4,8 +4,9 @@ import { requireActiveUser } from "~/session.server";
 import type { PostWithMessages } from "~/models/post.server";
 import { createMessage, Message } from "~/models/message.server";
 import { getPost } from "~/models/post.server";
-import { useFetcher, useLoaderData } from "@remix-run/react";
-import MessageComponent from "~/components/message";
+import { useLoaderData } from "@remix-run/react";
+import MessageComponent from "~/components/Message";
+import MessageForm from "~/components/MessageForm";
 
 type LoaderData = {
   post: PostWithMessages;
@@ -78,7 +79,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function PostPage() {
   const data = useLoaderData() as LoaderData;
-  const fetcher = useFetcher();
 
   if (!data.post) {
     return null;
@@ -88,22 +88,7 @@ export default function PostPage() {
     <div>
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
-      <fetcher.Form method="post" className="mb-8">
-        <div>
-          <label htmlFor="text" className="form-control">
-            Message:
-            <textarea
-              name="text"
-              placeholder="Add a comment"
-              className="textarea textarea-bordered mt-1"
-            />
-          </label>
-        </div>
-        <input type="hidden" value={data.post.id} name="postId" />
-        <button className="btn btn-primary mt-4 rounded" type="submit">
-          Post
-        </button>
-      </fetcher.Form>
+      <MessageForm id={data.post.id} />
       {data.post.messages.map((message) => (
         <MessageComponent message={message} depth={0} key={message.id} />
       ))}
