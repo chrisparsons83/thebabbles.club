@@ -1,9 +1,9 @@
-import { Post } from "@prisma/client";
+import { Message, Post } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
 
-type Props = Pick<Post, "id">;
+type Props = Pick<Post, "id"> & Partial<Pick<Message, "parentId">>;
 
-export default function MessageForm({ id }: Props) {
+export default function MessageForm({ id, parentId }: Props) {
   const fetcher = useFetcher();
 
   return (
@@ -19,6 +19,7 @@ export default function MessageForm({ id }: Props) {
         </label>
       </div>
       <input type="hidden" value={id} name="postId" />
+      <input type="hidden" value={parentId ?? undefined} name="parentId" />
       <button className="btn btn-primary mt-4 rounded" type="submit">
         Post
       </button>

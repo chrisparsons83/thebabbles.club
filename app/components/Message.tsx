@@ -39,7 +39,9 @@ export default function MessageComponent({ message }: Props) {
       <div className="pl-8">
         Like | <button onClick={toggleForm}>Reply</button>
       </div>
-      {showMessageForm && <MessageForm id={message.postId} />}
+      {showMessageForm && (
+        <MessageForm id={message.postId} parentId={message.id} />
+      )}
     </div>
   );
 }

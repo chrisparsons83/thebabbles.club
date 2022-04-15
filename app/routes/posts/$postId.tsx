@@ -17,10 +17,12 @@ type ActionData = {
   fields?: {
     text?: string;
     postId?: string;
+    parentId?: string | null;
   };
   errors?: {
     text?: string;
     postId?: string;
+    parentId?: string;
   };
   message?: Message;
 };
@@ -44,8 +46,13 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const text = formData.get("text");
   const postId = formData.get("postId");
+  let parentId = formData.get("parentId");
 
-  if (typeof text !== "string" || typeof postId !== "string") {
+  if (
+    typeof text !== "string" ||
+    typeof postId !== "string" ||
+    typeof parentId !== "string"
+  ) {
     return json<ActionData>(
       { formError: "Form was not submitted correctly." },
       { status: 400 }
@@ -56,12 +63,16 @@ export const action: ActionFunction = async ({ request }) => {
     text: validateText(text),
     postId: validatePostId(postId),
   };
-  const fields = { text, postId };
+
+  if (parentId === "") parentId = null;
+  const fields = { text, postId, parentId };
+  console.log(fields);
+
   if (Object.values(errors).some(Boolean)) {
     return json<ActionData>({ errors, fields }, { status: 400 });
   }
 
-  const message = await createMessage({ userId, text, postId });
+  const message = await createMessage({ userId, text, postId, parentId });
 
   return json<ActionData>({ message });
 };
