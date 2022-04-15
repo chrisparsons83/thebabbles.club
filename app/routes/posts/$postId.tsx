@@ -99,9 +99,21 @@ export default function PostPage() {
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
       <MessageForm id={data.post.id} />
-      {data.post.messages.map((message) => (
-        <MessageComponent message={message} depth={0} key={message.id} />
-      ))}
+      {data.post.messages
+        .filter((message) => !message.parentId)
+        .map((message) => {
+          const childMessages = data.post?.messages.filter(
+            (m) => m.parentId === message.id
+          );
+          return (
+            <MessageComponent
+              message={message}
+              depth={0}
+              childMessages={childMessages}
+              key={message.id}
+            />
+          );
+        })}
     </div>
   );
 }

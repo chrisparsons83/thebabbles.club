@@ -4,16 +4,25 @@ import { Message } from "~/models/message.server";
 import { User } from "~/models/user.server";
 import MessageForm from "./MessageForm";
 
-type Props = {
-  message: Message & {
-    user: User;
-  };
-  depth: number;
+type MessageAndUser = Message & {
+  user: User;
 };
 
-export default function MessageComponent({ message }: Props) {
+type Props = {
+  message: MessageAndUser;
+  depth: number;
+  childMessages?: MessageAndUser[];
+};
+
+export default function MessageComponent({
+  message,
+  depth,
+  childMessages,
+}: Props) {
   const createdAt = DateTime.fromISO(message.createdAt.toString());
   const [showMessageForm, setShowMessageForm] = useState(false);
+
+  console.log({ childMessages });
 
   const toggleForm = () => {
     setShowMessageForm((prevState) => !prevState);
@@ -42,6 +51,13 @@ export default function MessageComponent({ message }: Props) {
       {showMessageForm && (
         <MessageForm id={message.postId} parentId={message.id} />
       )}
+      {childMessages &&
+        childMessages.length > 0 &&
+        childMessages.map((message) => (
+          <div className="border-r-4 border-white bg-neutral" key={message.id}>
+            <MessageComponent message={message} depth={depth + 1} />
+          </div>
+        ))}
     </div>
   );
 }
