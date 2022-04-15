@@ -66,7 +66,6 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (parentId === "") parentId = null;
   const fields = { text, postId, parentId };
-  console.log(fields);
 
   if (Object.values(errors).some(Boolean)) {
     return json<ActionData>({ errors, fields }, { status: 400 });
