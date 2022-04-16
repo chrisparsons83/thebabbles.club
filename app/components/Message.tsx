@@ -31,11 +31,9 @@ export default function MessageComponent({
     .reverse()
     .slice();
 
-  if (childMessages && childMessages.length > 0) console.log({ childMessages });
-
   return (
     <div>
-      <div className="py-4">
+      <div className="py-6">
         <div>
           <div className="avatar">
             <div className="ml-4 mr-2 w-6 rounded">
@@ -53,13 +51,12 @@ export default function MessageComponent({
             {createdAt.toRelative()}
           </time>
         </div>
-        <div className="pl-12">{message.text}</div>
+        <div className="py-2 pl-12">{message.text}</div>
         <div className="pl-12">
-          Like{" "}
           {depth < 4 && (
-            <>
-              | <button onClick={toggleForm}>Reply</button>
-            </>
+            <button onClick={toggleForm} className="btn btn-primary btn-xs">
+              Reply
+            </button>
           )}
         </div>
       </div>
@@ -69,7 +66,10 @@ export default function MessageComponent({
       {childMessages &&
         childMessages.length > 0 &&
         childMessages.map((message) => (
-          <div className="border-l-8 border-white bg-neutral" key={message.id}>
+          <div
+            className="border-l-8 border-gray-200 bg-neutral"
+            key={message.id}
+          >
             <MessageComponent
               message={message}
               depth={depth + 1}
