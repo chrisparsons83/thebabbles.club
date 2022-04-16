@@ -34,24 +34,34 @@ export default function MessageComponent({
   if (childMessages && childMessages.length > 0) console.log({ childMessages });
 
   return (
-    <div className="py-4">
-      <div>
-        <div className="avatar">
-          <div className="mr-2 w-6 rounded">
-            <img
-              src="https://api.lorem.space/image/face?hash=83692"
-              alt="face"
-            />
+    <div>
+      <div className="py-4">
+        <div>
+          <div className="avatar">
+            <div className="ml-4 mr-2 w-6 rounded">
+              <img
+                src="https://api.lorem.space/image/face?hash=83692"
+                alt="face"
+              />
+            </div>
           </div>
+          <span className="font-bold">{message.user.username}</span>{" "}
+          <time
+            className="text-neutral-200 italic"
+            dateTime={createdAt.toISO()}
+          >
+            {createdAt.toRelative()}
+          </time>
         </div>
-        <span className="font-bold">{message.user.username}</span>{" "}
-        <time className="text-neutral-200 italic" dateTime={createdAt.toISO()}>
-          {createdAt.toRelative()}
-        </time>
-      </div>
-      <div className="pl-8">{message.text}</div>
-      <div className="pl-8">
-        Like | <button onClick={toggleForm}>Reply</button>
+        <div className="pl-12">{message.text}</div>
+        <div className="pl-12">
+          Like{" "}
+          {depth < 4 && (
+            <>
+              | <button onClick={toggleForm}>Reply</button>
+            </>
+          )}
+        </div>
       </div>
       {showMessageForm && (
         <MessageForm id={message.postId} parentId={message.id} />
@@ -59,7 +69,7 @@ export default function MessageComponent({
       {childMessages &&
         childMessages.length > 0 &&
         childMessages.map((message) => (
-          <div className="border-r-4 border-white bg-neutral" key={message.id}>
+          <div className="border-l-8 border-white bg-neutral" key={message.id}>
             <MessageComponent
               message={message}
               depth={depth + 1}
