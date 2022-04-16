@@ -102,14 +102,11 @@ export default function PostPage() {
       {data.post.messages
         .filter((message) => !message.parentId)
         .map((message) => {
-          const childMessages = data.post?.messages.filter(
-            (m) => m.parentId === message.id
-          );
           return (
             <MessageComponent
               message={message}
               depth={0}
-              childMessages={childMessages}
+              allMessages={data.post?.messages}
               key={message.id}
             />
           );

@@ -11,13 +11,13 @@ type MessageAndUser = Message & {
 type Props = {
   message: MessageAndUser;
   depth: number;
-  childMessages?: MessageAndUser[];
+  allMessages?: MessageAndUser[];
 };
 
 export default function MessageComponent({
   message,
   depth,
-  childMessages,
+  allMessages,
 }: Props) {
   const createdAt = DateTime.fromISO(message.createdAt.toString());
   const [showMessageForm, setShowMessageForm] = useState(false);
@@ -25,6 +25,13 @@ export default function MessageComponent({
   const toggleForm = () => {
     setShowMessageForm((prevState) => !prevState);
   };
+
+  const childMessages = allMessages
+    ?.filter((m) => m.parentId === message.id)
+    .reverse()
+    .slice();
+
+  if (childMessages && childMessages.length > 0) console.log({ childMessages });
 
   return (
     <div className="py-4">
@@ -53,7 +60,11 @@ export default function MessageComponent({
         childMessages.length > 0 &&
         childMessages.map((message) => (
           <div className="border-r-4 border-white bg-neutral" key={message.id}>
-            <MessageComponent message={message} depth={depth + 1} />
+            <MessageComponent
+              message={message}
+              depth={depth + 1}
+              allMessages={allMessages}
+            />
           </div>
         ))}
     </div>
