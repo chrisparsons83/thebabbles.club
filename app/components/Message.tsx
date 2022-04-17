@@ -61,7 +61,11 @@ export default function MessageComponent({
         </div>
       </div>
       {showMessageForm && (
-        <MessageForm id={message.postId} parentId={message.id} />
+        <MessageForm
+          id={message.postId}
+          parentId={message.id}
+          toggleForm={toggleForm}
+        />
       )}
       {childMessages &&
         childMessages.length > 0 &&
