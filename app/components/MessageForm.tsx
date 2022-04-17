@@ -12,6 +12,7 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
   const fetcher = useFetcher();
   const isAdding = fetcher.state === "submitting";
   const formRef = useRef<HTMLFormElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [lastState, setLastState] = useState("");
 
   useEffect(() => {
@@ -22,6 +23,12 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
     setLastState(fetcher.state);
   }, [fetcher.state, lastState, toggleForm]);
 
+  useEffect(() => {
+    if (textareaRef) {
+      textareaRef.current?.focus();
+    }
+  }, [textareaRef]);
+
   return (
     <fetcher.Form method="post" className="mb-8" ref={formRef}>
       <div>
@@ -31,6 +38,7 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
             name="text"
             placeholder="Add a comment"
             className="textarea textarea-bordered mt-1"
+            ref={textareaRef}
           />
         </label>
       </div>
