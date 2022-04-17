@@ -17,8 +17,8 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
 
   useEffect(() => {
     if (fetcher.state === "idle") {
-      formRef.current?.reset();
       if (lastState === "loading" && toggleForm) toggleForm();
+      formRef.current?.reset();
     }
     setLastState(fetcher.state);
   }, [fetcher.state, lastState, toggleForm]);

@@ -27,12 +27,10 @@ io.on("connection", (socket) => {
 
   socket.on("joinPage", (postId) => {
     socket.join(postId);
-    io.to(postId).emit("event", `${socket.id} joined ${postId}`);
   });
 
   socket.on("leavePage", (postId) => {
     socket.leave(postId);
-    io.to(postId).emit("event", `${socket.id} left ${postId}`);
   });
 });
 
