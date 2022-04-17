@@ -119,13 +119,6 @@ export default function PostPage() {
     <div>
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
-      <button
-        className="btn"
-        type="button"
-        onClick={() => socket?.emit("event", "ping")}
-      >
-        Send ping
-      </button>
       <MessageForm id={data.post.id} />
       {data.post.messages
         .filter((message) => !message.parentId)
