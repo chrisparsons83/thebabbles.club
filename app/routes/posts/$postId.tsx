@@ -96,8 +96,6 @@ export default function PostPage() {
   useEffect(() => {
     if (!socket) return;
 
-    console.log("rerender");
-
     socket.on("event", (socketData) => {
       console.log(data, socketData);
     });
