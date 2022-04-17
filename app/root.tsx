@@ -14,12 +14,14 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 
-import tailwindStylesheetUrl from "./styles/tailwind.css";
-import { getUser } from "./session.server";
-import Navbar from "./components/Navbar";
 import { User } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
+
+import tailwindStylesheetUrl from "./styles/tailwind.css";
+import { getUser } from "./session.server";
+import Navbar from "./components/Navbar";
+import { SocketProvider } from "./context";
 
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
@@ -68,10 +70,12 @@ export default function App() {
         <Links />
       </head>
       <body className="h-full">
-        <Navbar user={user} />
-        <div className="px-4 md:container md:mx-auto">
-          <Outlet />
-        </div>
+        <SocketProvider socket={socket}>
+          <Navbar user={user} />
+          <div className="px-4 md:container md:mx-auto">
+            <Outlet />
+          </div>
+        </SocketProvider>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

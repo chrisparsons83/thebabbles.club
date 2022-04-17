@@ -7,6 +7,8 @@ import { getPost } from "~/models/post.server";
 import { useLoaderData } from "@remix-run/react";
 import MessageComponent from "~/components/Message";
 import MessageForm from "~/components/MessageForm";
+import { useSocket } from "~/context";
+import { useEffect } from "react";
 
 type LoaderData = {
   post: PostWithMessages;
@@ -89,6 +91,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 export default function PostPage() {
   const data = useLoaderData() as LoaderData;
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("event", (data) => {
+      console.log(data);
+    });
+
+    socket.emit("event", "ping");
+  }, [socket]);
 
   if (!data.post) {
     return null;
@@ -98,6 +111,13 @@ export default function PostPage() {
     <div>
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
+      <button
+        className="btn"
+        type="button"
+        onClick={() => socket?.emit("event", "ping")}
+      >
+        Send ping
+      </button>
       <MessageForm id={data.post.id} />
       {data.post.messages
         .filter((message) => !message.parentId)
