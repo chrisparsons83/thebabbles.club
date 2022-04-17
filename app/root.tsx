@@ -45,7 +45,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function App() {
   const { user } = useLoaderData<LoaderData>();
-
   const [socket, setSocket] = useState<Socket>();
 
   useEffect(() => {
