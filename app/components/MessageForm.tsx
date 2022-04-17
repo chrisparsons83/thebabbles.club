@@ -1,6 +1,6 @@
 import { Message, Post } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Props = {
   id: Post["id"];
@@ -12,12 +12,15 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
   const fetcher = useFetcher();
   const isAdding = fetcher.state === "submitting";
   const formRef = useRef<HTMLFormElement>(null);
+  const [lastState, setLastState] = useState("");
 
   useEffect(() => {
-    if (!isAdding) {
+    if (fetcher.state === "idle") {
       formRef.current?.reset();
+      if (lastState === "loading" && toggleForm) toggleForm();
     }
-  }, [isAdding]);
+    setLastState(fetcher.state);
+  }, [fetcher.state, lastState, toggleForm]);
 
   return (
     <fetcher.Form method="post" className="mb-8" ref={formRef}>
