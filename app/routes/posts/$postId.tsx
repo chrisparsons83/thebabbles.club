@@ -96,13 +96,13 @@ export default function PostPage() {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("event", (socketData) => {
-      console.log(data, socketData);
-    });
-
     if (data.post) {
       socket.emit("joinPage", data.post.id);
     }
+
+    socket.on("messagePosted", (socketData) => {
+      console.log(data, socketData);
+    });
 
     return () => {
       socket.emit("leavePage", data.post?.id);

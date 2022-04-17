@@ -1,6 +1,7 @@
 import { Message, Post } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
+import { useSocket } from "~/context";
 
 type Props = {
   id: Post["id"];
@@ -14,14 +15,20 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [lastState, setLastState] = useState("");
+  const socket = useSocket();
 
   useEffect(() => {
     if (fetcher.state === "idle") {
       if (lastState === "loading" && toggleForm) toggleForm();
       formRef.current?.reset();
     }
+
+    if (fetcher.state === "loading" && lastState !== "submitting" && socket) {
+      socket.emit("messagePosted", fetcher.data.message);
+    }
+
     setLastState(fetcher.state);
-  }, [fetcher.state, lastState, toggleForm]);
+  }, [fetcher.data, fetcher.state, lastState, toggleForm, socket]);
 
   useEffect(() => {
     textareaRef.current?.focus();

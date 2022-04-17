@@ -20,17 +20,17 @@ io.on("connection", (socket) => {
 
   socket.emit("confirmation", "connected!");
 
-  socket.on("event", (data) => {
-    console.log(socket.id, data);
-    io.emit("event", "pong");
-  });
-
   socket.on("joinPage", (postId) => {
     socket.join(postId);
   });
 
   socket.on("leavePage", (postId) => {
     socket.leave(postId);
+  });
+
+  socket.on("messagePosted", (message) => {
+    console.log(message);
+    io.to(message.postId).emit("messagePosted", message);
   });
 });
 
