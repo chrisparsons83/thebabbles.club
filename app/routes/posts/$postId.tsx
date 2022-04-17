@@ -96,12 +96,20 @@ export default function PostPage() {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("event", (data) => {
-      console.log(data);
+    console.log("rerender");
+
+    socket.on("event", (socketData) => {
+      console.log(data, socketData);
     });
 
-    socket.emit("event", "ping");
-  }, [socket]);
+    if (data.post) {
+      socket.emit("joinPage", data.post.id);
+    }
+
+    return () => {
+      socket.emit("leavePage", data.post?.id);
+    };
+  }, [socket, data]);
 
   if (!data.post) {
     return null;
