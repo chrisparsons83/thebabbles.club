@@ -24,10 +24,8 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
   }, [fetcher.state, lastState, toggleForm]);
 
   useEffect(() => {
-    if (textareaRef) {
-      textareaRef.current?.focus();
-    }
-  }, [textareaRef]);
+    textareaRef.current?.focus();
+  }, []);
 
   return (
     <fetcher.Form method="post" className="mb-8" ref={formRef}>
