@@ -3,8 +3,28 @@ import express from "express";
 import compression from "compression";
 import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 const app = express();
+
+// You need to create the HTTP server from the Express app
+const httpServer = createServer(app);
+
+// And then attach the socket.io server to the HTTP server
+const io = new Server(httpServer);
+
+io.on("connection", (socket) => {
+  // from this point you are on the WS connection with a specific client
+  console.log(socket.id, "connected");
+
+  socket.emit("confirmation", "connected!");
+
+  socket.on("event", (data) => {
+    console.log(socket.id, data);
+    socket.emit("event", "pong");
+  });
+});
 
 app.use((req, res, next) => {
   // helpful headers:
@@ -84,7 +104,7 @@ app.all(
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
   // require the built app so we're ready when the first request comes in
   require(BUILD_DIR);
   console.log(`✅ app ready: http://localhost:${port}`);
