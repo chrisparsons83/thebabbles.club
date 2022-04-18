@@ -2,13 +2,17 @@ import { ActionFunction, json, LoaderFunction } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { requireActiveUser } from "~/session.server";
 import type { PostWithMessages } from "~/models/post.server";
-import { createMessage, Message } from "~/models/message.server";
+import {
+  createMessage,
+  Message,
+  MessageWithUser,
+} from "~/models/message.server";
 import { getPost } from "~/models/post.server";
 import { useLoaderData } from "@remix-run/react";
 import MessageComponent from "~/components/Message";
 import MessageForm from "~/components/MessageForm";
 import { useSocket } from "~/context";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type LoaderData = {
   post: PostWithMessages;
@@ -90,8 +94,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function PostPage() {
-  const data = useLoaderData() as LoaderData;
+  let data = useLoaderData() as LoaderData;
   const socket = useSocket();
+  const [listOfMessages, setListOfMessages] =
+    useState<MessageWithUser[]>(data.post!.messages) ||
+    ([] as MessageWithUser[]);
 
   useEffect(() => {
     if (!socket) return;
@@ -100,34 +107,51 @@ export default function PostPage() {
       socket.emit("joinPage", data.post.id);
     }
 
-    socket.on("messagePosted", (socketData: Message) => {
-      console.log(data, socketData);
+    socket.on("messagePosted", (newMessage: MessageWithUser) => {
+      if (!newMessage) return;
+      console.log(data, newMessage);
+      if (listOfMessages.some((message) => message?.id === newMessage.id))
+        return;
+
+      setListOfMessages((messages) => [newMessage, ...messages]);
     });
 
     return () => {
       socket.emit("leavePage", data.post?.id);
     };
-  }, [socket, data]);
+  }, [socket, data, setListOfMessages, listOfMessages]);
+
+  useEffect(() => {
+    if (!data.post) return;
+
+    setListOfMessages(() => data.post?.messages!);
+  }, [data, setListOfMessages]);
 
   if (!data.post) {
     return null;
   }
+
+  // TODO: HOW DO I TYPECHECK THIS SO I DON'T HAVE TO WORRY ABOUT ARRAYS OF NULLS?
+  const messageDisplay =
+    listOfMessages.length > 0 ? listOfMessages : data.post.messages;
 
   return (
     <div>
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
       <MessageForm id={data.post.id} />
-      {data.post.messages
-        .filter((message) => !message.parentId)
+      {messageDisplay
+        .filter((message) => message && !message.parentId)
         .map((message) => {
           return (
-            <MessageComponent
-              message={message}
-              depth={0}
-              allMessages={data.post?.messages}
-              key={message.id}
-            />
+            message && (
+              <MessageComponent
+                message={message}
+                depth={0}
+                allMessages={data.post?.messages}
+                key={message.id}
+              />
+            )
           );
         })}
     </div>
