@@ -6,7 +6,7 @@ import { createRequestHandler } from "@remix-run/express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { Message } from "@prisma/client";
-import { getMessage } from "~/models/message.server";
+import { getMessage } from "./app/models/message.server";
 
 const app = express();
 
