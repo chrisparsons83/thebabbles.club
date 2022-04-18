@@ -1,6 +1,8 @@
-import type { Message, User, Post } from "@prisma/client";
+import type { Message, User, Post, Prisma } from "@prisma/client";
 import { prisma } from "~/db.server";
 export type { Message } from "@prisma/client";
+
+export type MessageWithUser = Prisma.PromiseReturnType<typeof getMessage>;
 
 type CreateMessageInput = {
   text: Message["text"];
