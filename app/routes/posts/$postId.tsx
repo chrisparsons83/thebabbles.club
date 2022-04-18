@@ -100,7 +100,7 @@ export default function PostPage() {
       socket.emit("joinPage", data.post.id);
     }
 
-    socket.on("messagePosted", (socketData) => {
+    socket.on("messagePosted", (socketData: Message) => {
       console.log(data, socketData);
     });
 

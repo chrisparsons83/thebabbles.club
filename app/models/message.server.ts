@@ -42,3 +42,12 @@ export function createMessage({
 
   return prisma.message.create(messageToCreate);
 }
+
+export function getMessage({ id }: Pick<Message, "id">) {
+  return prisma.message.findFirst({
+    where: { id },
+    include: {
+      user: true,
+    },
+  });
+}

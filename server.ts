@@ -5,6 +5,8 @@ import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { Message } from "@prisma/client";
+import { getMessage } from "~/models/message.server";
 
 const app = express();
 
@@ -28,9 +30,11 @@ io.on("connection", (socket) => {
     socket.leave(postId);
   });
 
-  socket.on("messagePosted", (message) => {
-    console.log(message);
-    io.to(message.postId).emit("messagePosted", message);
+  socket.on("messagePosted", async (message: Message) => {
+    if (!message) return;
+
+    const messageWithUser = await getMessage({ id: message.id });
+    socket.broadcast.to(message.postId).emit("messagePosted", messageWithUser);
   });
 });
 
