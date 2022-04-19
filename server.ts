@@ -5,12 +5,14 @@ import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { Message } from "@prisma/client";
+import { Message, PrismaClient } from "@prisma/client";
 
 const app = express();
 
 // You need to create the HTTP server from the Express app
 const httpServer = createServer(app);
+
+const prisma = new PrismaClient();
 
 // And then attach the socket.io server to the HTTP server
 const io = new Server(httpServer);
@@ -32,8 +34,14 @@ io.on("connection", (socket) => {
   socket.on("messagePosted", async (message: Message) => {
     if (!message) return;
 
+    const messageWithUser = await prisma.message.findFirst({
+      where: { id: message.id },
+      include: {
+        user: true,
+      },
+    });
     // const messageWithUser = await getMessage({ id: message.id });
-    // socket.broadcast.to(message.postId).emit("messagePosted", messageWithUser);
+    socket.broadcast.to(message.postId).emit("messagePosted", messageWithUser);
   });
 });
 
