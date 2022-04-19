@@ -19,6 +19,7 @@ model User {
   notes    Note[]
   posts    Post[]
   messages Message[]
+  likes    Like[]
 
   isActive Boolean @default(false)
 }
@@ -71,4 +72,17 @@ model Message {
   parentId  String?
   parent    Message?  @relation("ParentChildren", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   children  Message[] @relation("ParentChildren")
+
+  likes     Like[]
+}
+
+model Like {
+  id        String    @id @default(cuid())
+  emoji     String
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+
+  message   Message    @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  messageId String
 }
