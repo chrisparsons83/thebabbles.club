@@ -50,6 +50,11 @@ export function getMessage({ id }: Pick<Message, "id">) {
     where: { id },
     include: {
       user: true,
+      likes: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
 }

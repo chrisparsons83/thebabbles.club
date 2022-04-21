@@ -1,6 +1,8 @@
-import { Like, Message, User } from "@prisma/client";
+import { Like, Message, Prisma, User } from "@prisma/client";
 import { prisma } from "~/db.server";
 export type { Like } from "@prisma/client";
+
+export type LikeWithUser = Prisma.PromiseReturnType<typeof getLike>;
 
 type CreateLikeInput = {
   userId: User["id"];
@@ -23,6 +25,16 @@ export function createLike({ emoji, messageId, userId }: CreateLikeInput) {
           id: userId,
         },
       },
+    },
+  });
+}
+
+export function getLike({ id }: Pick<Like, "id">) {
+  return prisma.like.findFirst({
+    where: { id },
+    include: {
+      user: true,
+      message: true,
     },
   });
 }

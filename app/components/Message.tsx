@@ -1,18 +1,13 @@
 import { useFetcher } from "@remix-run/react";
 import { DateTime } from "luxon";
 import { useState } from "react";
-import { Message } from "~/models/message.server";
-import { User } from "~/models/user.server";
+import { MessageWithUser } from "~/models/message.server";
 import MessageForm from "./MessageForm";
 
-type MessageAndUser = Message & {
-  user: User;
-};
-
 type Props = {
-  message: MessageAndUser;
+  message: MessageWithUser;
   depth: number;
-  allMessages?: MessageAndUser[];
+  allMessages?: MessageWithUser[];
 };
 
 export default function MessageComponent({
@@ -21,7 +16,7 @@ export default function MessageComponent({
   allMessages,
 }: Props) {
   const fetcher = useFetcher();
-  const createdAt = DateTime.fromISO(message.createdAt.toString());
+  const createdAt = DateTime.fromISO(message!.createdAt.toString());
   const [showMessageForm, setShowMessageForm] = useState(false);
 
   const toggleForm = () => {
@@ -29,7 +24,7 @@ export default function MessageComponent({
   };
 
   const childMessages = allMessages
-    ?.filter((m) => m.parentId === message.id)
+    ?.filter((m) => m?.parentId === message?.id)
     .reverse()
     .slice();
 
@@ -45,7 +40,7 @@ export default function MessageComponent({
               />
             </div>
           </div>
-          <span className="font-bold">{message.user.username}</span>{" "}
+          <span className="font-bold">{message!.user.username}</span>{" "}
           <time
             className="text-neutral-200 italic"
             dateTime={createdAt.toISO()}
@@ -53,7 +48,7 @@ export default function MessageComponent({
             {createdAt.toRelative()}
           </time>
         </div>
-        <div className="py-2 pl-12">{message.text}</div>
+        <div className="py-2 pl-12">{message!.text}</div>
         <div className="pl-12">
           {depth < 4 && (
             <button onClick={toggleForm} className="btn btn-primary btn-xs">
@@ -61,7 +56,7 @@ export default function MessageComponent({
             </button>
           )}
           <fetcher.Form method="post" className="inline">
-            <input type="hidden" name="messageId" value={message.id} />
+            <input type="hidden" name="messageId" value={message!.id} />
             <input type="hidden" name="emoji" value="👍" />
             <button
               type="submit"
@@ -69,15 +64,20 @@ export default function MessageComponent({
               name="_action"
               value="like"
             >
-              Like
+              👍
             </button>
           </fetcher.Form>
+          <span>
+            {message!.likes.map((like) => {
+              return like?.user.username;
+            })}
+          </span>
         </div>
       </div>
       {showMessageForm && (
         <MessageForm
-          id={message.postId}
-          parentId={message.id}
+          id={message!.postId}
+          parentId={message!.id}
           toggleForm={toggleForm}
         />
       )}
@@ -86,7 +86,7 @@ export default function MessageComponent({
         childMessages.map((message) => (
           <div
             className="border-l-8 border-gray-200 bg-neutral"
-            key={message.id}
+            key={message!.id}
           >
             <MessageComponent
               message={message}
