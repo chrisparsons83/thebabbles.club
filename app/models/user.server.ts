@@ -17,6 +17,14 @@ export async function getUserByUsername(username: User["username"]) {
   return prisma.user.findUnique({ where: { username } });
 }
 
+export async function getActiveUsers() {
+  return prisma.user.findMany({ where: { isActive: true } });
+}
+
+export async function getInactiveUsers() {
+  return prisma.user.findMany({ where: { isActive: false } });
+}
+
 export async function createUser(
   email: User["email"],
   password: string,
