@@ -32,6 +32,7 @@ export function getPost({ id }: Pick<Post, "id">) {
         orderBy: { createdAt: "desc" },
         include: {
           user: true,
+          likes: true,
         },
       },
     },

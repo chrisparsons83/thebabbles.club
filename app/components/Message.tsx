@@ -1,3 +1,4 @@
+import { useFetcher } from "@remix-run/react";
 import { DateTime } from "luxon";
 import { useState } from "react";
 import { Message } from "~/models/message.server";
@@ -19,6 +20,7 @@ export default function MessageComponent({
   depth,
   allMessages,
 }: Props) {
+  const fetcher = useFetcher();
   const createdAt = DateTime.fromISO(message.createdAt.toString());
   const [showMessageForm, setShowMessageForm] = useState(false);
 
@@ -58,6 +60,18 @@ export default function MessageComponent({
               Reply
             </button>
           )}
+          <fetcher.Form method="post" className="inline">
+            <input type="hidden" name="messageId" value={message.id} />
+            <input type="hidden" name="emoji" value="👍" />
+            <button
+              type="submit"
+              className="btn btn-secondary btn-xs"
+              name="_action"
+              value="like"
+            >
+              Like
+            </button>
+          </fetcher.Form>
         </div>
       </div>
       {showMessageForm && (

@@ -53,6 +53,8 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
         className="btn btn-primary mt-4 rounded"
         type="submit"
         disabled={isAdding}
+        name="_action"
+        value="createMessage"
       >
         {isAdding ? "Posting..." : "Post"}
       </button>
