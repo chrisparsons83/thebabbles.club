@@ -38,6 +38,11 @@ io.on("connection", (socket) => {
       where: { id: message.id },
       include: {
         user: true,
+        likes: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
     // const messageWithUser = await getMessage({ id: message.id });

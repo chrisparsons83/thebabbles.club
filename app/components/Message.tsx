@@ -68,9 +68,12 @@ export default function MessageComponent({
             </button>
           </fetcher.Form>
           <span>
-            {message!.likes.map((like) => {
-              return like?.user.username;
-            })}
+            {message &&
+              message.likes &&
+              message.likes.length > 0 &&
+              message.likes.map((like) => {
+                return like?.user.username;
+              })}
           </span>
         </div>
       </div>
