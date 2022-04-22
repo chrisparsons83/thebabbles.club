@@ -77,3 +77,17 @@ export async function verifyLogin(
 
   return userWithoutPassword;
 }
+
+export async function activateUser(id: User["id"]) {
+  return prisma.user.update({
+    where: { id },
+    data: { isActive: true },
+  });
+}
+
+export async function deactivateUser(id: User["id"]) {
+  return prisma.user.update({
+    where: { id },
+    data: { isActive: false },
+  });
+}

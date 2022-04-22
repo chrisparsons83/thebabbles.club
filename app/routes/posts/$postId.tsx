@@ -153,7 +153,6 @@ export default function PostPage() {
 
     socket.on("messagePosted", (newMessage: MessageWithUser) => {
       if (!newMessage) return;
-      console.log(data, newMessage);
       if (listOfMessages.some((message) => message?.id === newMessage.id))
         return;
 
