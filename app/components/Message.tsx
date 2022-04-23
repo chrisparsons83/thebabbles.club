@@ -48,7 +48,7 @@ export default function MessageComponent({
             {createdAt.toRelative()}
           </time>
         </div>
-        <div className="py-2 pl-12">{message!.text}</div>
+        <div className="break-words py-2 pl-12">{message!.text}</div>
         <div className="pl-12">
           {depth < 4 && (
             <button onClick={toggleForm} className="btn btn-primary btn-xs">
