@@ -175,11 +175,8 @@ export default function PostPage() {
     return null;
   }
 
-  // TODO: HOW DO I TYPECHECK THIS SO I DON'T HAVE TO WORRY ABOUT ARRAYS OF NULLS?
   const messageDisplay =
     listOfMessages.length > 0 ? listOfMessages : data.post.messages;
-
-  console.log(messageDisplay);
 
   return (
     <div>
