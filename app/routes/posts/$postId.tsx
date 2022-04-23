@@ -179,6 +179,8 @@ export default function PostPage() {
   const messageDisplay =
     listOfMessages.length > 0 ? listOfMessages : data.post.messages;
 
+  console.log(messageDisplay);
+
   return (
     <div>
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
@@ -192,7 +194,7 @@ export default function PostPage() {
               <MessageComponent
                 message={message}
                 depth={0}
-                allMessages={data.post?.messages}
+                allMessages={messageDisplay}
                 key={message.id}
               />
             )
