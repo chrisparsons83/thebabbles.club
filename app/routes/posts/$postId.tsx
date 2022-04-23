@@ -160,6 +160,7 @@ export default function PostPage() {
     });
 
     return () => {
+      socket.removeAllListeners();
       socket.emit("leavePage", data.post?.id);
     };
   }, [socket, data, setListOfMessages, listOfMessages]);
