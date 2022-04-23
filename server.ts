@@ -48,6 +48,10 @@ io.on("connection", (socket) => {
     // const messageWithUser = await getMessage({ id: message.id });
     socket.broadcast.to(message.postId).emit("messagePosted", messageWithUser);
   });
+
+  socket.on("likePosted", async (message: Message) => {
+    console.log("likePosted", message);
+  });
 });
 
 app.use((req, res, next) => {

@@ -159,6 +159,23 @@ export default function PostPage() {
       setListOfMessages((messages) => [newMessage, ...messages]);
     });
 
+    socket.on("messageEdited", (newMessage: MessageWithUser) => {
+      if (!newMessage) return;
+
+      setListOfMessages((messages) => {
+        const index = messages.findIndex(
+          (message) => message?.id === newMessage.id
+        );
+        if (index === -1) return messages;
+
+        return [
+          ...messages.slice(0, index),
+          newMessage,
+          ...messages.slice(index + 1),
+        ];
+      });
+    });
+
     return () => {
       socket.removeAllListeners();
       socket.emit("leavePage", data.post?.id);
