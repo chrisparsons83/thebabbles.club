@@ -13,7 +13,7 @@ import MessageComponent from "~/components/Message";
 import MessageForm from "~/components/MessageForm";
 import { useSocket } from "~/context";
 import { useEffect, useState } from "react";
-import { createLike, Like } from "~/models/like.server";
+import { createLike, Like, LikeWithUser } from "~/models/like.server";
 
 type LoaderData = {
   post: PostWithMessages;
@@ -159,21 +159,8 @@ export default function PostPage() {
       setListOfMessages((messages) => [newMessage, ...messages]);
     });
 
-    socket.on("messageEdited", (newMessage: MessageWithUser) => {
-      if (!newMessage) return;
-
-      setListOfMessages((messages) => {
-        const index = messages.findIndex(
-          (message) => message?.id === newMessage.id
-        );
-        if (index === -1) return messages;
-
-        return [
-          ...messages.slice(0, index),
-          newMessage,
-          ...messages.slice(index + 1),
-        ];
-      });
+    socket.on("likePosted", (newLike: any) => {
+      console.log({ newLike });
     });
 
     return () => {

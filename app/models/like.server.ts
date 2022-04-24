@@ -11,7 +11,6 @@ type CreateLikeInput = {
 };
 
 export function createLike({ emoji, messageId, userId }: CreateLikeInput) {
-  console.log({ test: "createLike", emoji, messageId, userId });
   return prisma.like.create({
     data: {
       emoji,

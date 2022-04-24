@@ -5,7 +5,7 @@ import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { Message, PrismaClient } from "@prisma/client";
+import { Like, Message, PrismaClient } from "@prisma/client";
 
 const app = express();
 
@@ -45,12 +45,23 @@ io.on("connection", (socket) => {
         },
       },
     });
-    // const messageWithUser = await getMessage({ id: message.id });
     socket.broadcast.to(message.postId).emit("messagePosted", messageWithUser);
   });
 
-  socket.on("likePosted", async (message: Message) => {
-    console.log("likePosted", message);
+  socket.on("likePosted", async (like: Like) => {
+    const { id } = like;
+
+    const fullLike = await prisma.like.findFirst({
+      where: { id },
+      include: {
+        user: true,
+        message: true,
+      },
+    });
+
+    if (!fullLike) return;
+
+    socket.broadcast.to(fullLike.message.postId).emit("likePosted", like);
   });
 });
 

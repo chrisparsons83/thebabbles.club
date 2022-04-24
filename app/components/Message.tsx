@@ -57,10 +57,10 @@ export default function MessageComponent({
           <LikeButton message={message} emoji="👍" />
         </div>
       </div>
-      {showMessageForm && (
+      {message && showMessageForm && (
         <MessageForm
-          id={message!.postId}
-          parentId={message!.id}
+          id={message.postId}
+          parentId={message.id}
           toggleForm={toggleForm}
         />
       )}

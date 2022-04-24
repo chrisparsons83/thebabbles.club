@@ -9,16 +9,23 @@ type Props = {
   emoji: string;
 };
 
+type FetcherData = {
+  like: Like;
+};
+
 export default function LikeButton({ message, emoji }: Props) {
-  const fetcher = useFetcher<Like>();
+  const fetcher = useFetcher<FetcherData>();
   const [lastState, setLastState] = useState("");
   const socket = useSocket();
 
   useEffect(() => {
-    if (fetcher.state === "loading" && lastState !== "submitting" && socket) {
-      console.log("like posted");
-      console.log(fetcher.data);
-      // socket.emit("likePosted", fetcher.data.message);
+    if (
+      fetcher.data &&
+      fetcher.state === "loading" &&
+      lastState !== "submitting" &&
+      socket
+    ) {
+      socket.emit("likePosted", fetcher.data.like);
     }
 
     setLastState(fetcher.state);
