@@ -23,6 +23,10 @@ import { getUser } from "./session.server";
 import Navbar from "./components/Navbar";
 import { SocketProvider } from "./context";
 import DominosModal from "./components/DominosModal";
+import TimeAgo from "javascript-time-ago";
+import en from "javascript-time-ago/locale/en.json";
+
+TimeAgo.addLocale(en);
 
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];

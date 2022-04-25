@@ -1,6 +1,7 @@
 import parse from "html-react-parser";
 import { DateTime } from "luxon";
 import { useState } from "react";
+import ReactTimeAgo from "react-time-ago";
 
 import { MessageWithUser } from "~/models/message.server";
 import LikeButton from "./LikeButton";
@@ -31,6 +32,8 @@ export default function MessageComponent({
 
   if (!message) return null;
 
+  const messageDate = new Date(createdAt.toISO());
+
   return (
     <div>
       <div className="py-6">
@@ -44,12 +47,11 @@ export default function MessageComponent({
             </div>
           </div>
           <span className="font-bold">{message!.user.username}</span>{" "}
-          <time
-            className="text-neutral-200 italic"
-            dateTime={createdAt.toISO()}
-          >
-            {createdAt.toRelative()}
-          </time>
+          <ReactTimeAgo
+            date={messageDate}
+            locale="en-US"
+            timeStyle="round-minute"
+          />
         </div>
         <div className="break-words py-2 pl-12">{parse(message.text)}</div>
         <div className="pl-12">
