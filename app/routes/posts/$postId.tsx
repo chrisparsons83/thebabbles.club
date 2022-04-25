@@ -1,5 +1,11 @@
+import { useEffect, useState } from "react";
 import { ActionFunction, json, LoaderFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+
+import Autolinker from "autolinker";
+import DOMPurify from "isomorphic-dompurify";
 import invariant from "tiny-invariant";
+
 import { requireActiveUser } from "~/session.server";
 import type { PostWithMessages } from "~/models/post.server";
 import {
@@ -8,11 +14,9 @@ import {
   MessageWithUser,
 } from "~/models/message.server";
 import { getPost } from "~/models/post.server";
-import { useLoaderData } from "@remix-run/react";
 import MessageComponent from "~/components/Message";
 import MessageForm from "~/components/MessageForm";
 import { useSocket } from "~/context";
-import { useEffect, useState } from "react";
 import { createLike, Like, LikeWithUser } from "~/models/like.server";
 
 type LoaderData = {
@@ -94,7 +98,14 @@ export const action: ActionFunction = async ({ request }) => {
         return json<ActionData>({ errors, fields }, { status: 400 });
       }
 
-      const message = await createMessage({ userId, text, postId, parentId });
+      const processedText = Autolinker.link(DOMPurify.sanitize(text));
+
+      const message = await createMessage({
+        userId,
+        text: processedText,
+        postId,
+        parentId,
+      });
 
       return json<ActionData>({ message });
     }

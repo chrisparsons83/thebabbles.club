@@ -1,5 +1,7 @@
+import parse from "html-react-parser";
 import { DateTime } from "luxon";
 import { useState } from "react";
+
 import { MessageWithUser } from "~/models/message.server";
 import LikeButton from "./LikeButton";
 import MessageForm from "./MessageForm";
@@ -27,6 +29,8 @@ export default function MessageComponent({
     .reverse()
     .slice();
 
+  if (!message) return null;
+
   return (
     <div>
       <div className="py-6">
@@ -47,7 +51,7 @@ export default function MessageComponent({
             {createdAt.toRelative()}
           </time>
         </div>
-        <div className="break-words py-2 pl-12">{message!.text}</div>
+        <div className="break-words py-2 pl-12">{parse(message.text)}</div>
         <div className="pl-12">
           {depth < 4 && (
             <button onClick={toggleForm} className="btn btn-primary btn-xs">
