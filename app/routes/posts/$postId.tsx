@@ -4,6 +4,7 @@ import { useLoaderData } from "@remix-run/react";
 
 import Autolinker from "autolinker";
 import DOMPurify from "isomorphic-dompurify";
+import snarkdown from "snarkdown";
 import invariant from "tiny-invariant";
 
 import { requireActiveUser } from "~/session.server";
@@ -98,7 +99,9 @@ export const action: ActionFunction = async ({ request }) => {
         return json<ActionData>({ errors, fields }, { status: 400 });
       }
 
-      const processedText = Autolinker.link(DOMPurify.sanitize(text));
+      const processedText = snarkdown(
+        Autolinker.link(DOMPurify.sanitize(text))
+      );
 
       const message = await createMessage({
         userId,
