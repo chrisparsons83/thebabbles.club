@@ -22,6 +22,7 @@ import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 import Navbar from "./components/Navbar";
 import { SocketProvider } from "./context";
+import DominosModal from "./components/DominosModal";
 
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
@@ -74,6 +75,7 @@ export default function App() {
           <div className="px-4 md:container md:mx-auto">
             <Outlet />
           </div>
+          <DominosModal />
         </SocketProvider>
         <ScrollRestoration />
         <Scripts />
