@@ -49,7 +49,6 @@
     "html-react-parser": "^1.4.12",
     "isomorphic-dompurify": "^0.18.0",
     "javascript-time-ago": "^2.3.13",
-    "luxon": "^2.3.2",
     "morgan": "^1.10.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

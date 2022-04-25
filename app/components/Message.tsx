@@ -1,5 +1,4 @@
 import parse from "html-react-parser";
-import { DateTime } from "luxon";
 import { useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 
@@ -18,7 +17,6 @@ export default function MessageComponent({
   depth,
   allMessages,
 }: Props) {
-  const createdAt = DateTime.fromISO(message!.createdAt.toString());
   const [showMessageForm, setShowMessageForm] = useState(false);
 
   const toggleForm = () => {
@@ -32,7 +30,7 @@ export default function MessageComponent({
 
   if (!message) return null;
 
-  const messageDate = new Date(createdAt.toISO());
+  const messageDate = new Date(message.createdAt);
 
   return (
     <div>
