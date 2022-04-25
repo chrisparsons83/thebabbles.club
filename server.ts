@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
 
     if (!fullLike) return;
 
-    socket.broadcast.to(fullLike.message.postId).emit("likePosted", like);
+    socket.broadcast.to(fullLike.message.postId).emit("likePosted", fullLike);
   });
 });
 

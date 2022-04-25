@@ -159,8 +159,16 @@ export default function PostPage() {
       setListOfMessages((messages) => [newMessage, ...messages]);
     });
 
-    socket.on("likePosted", (newLike: any) => {
-      console.log({ newLike });
+    socket.on("likePosted", (newLike: LikeWithUser) => {
+      if (!newLike) return;
+
+      const message = listOfMessages.find((message) => {
+        return message && message.id === newLike.messageId;
+      });
+
+      if (!message) return;
+      message.likes.push(newLike);
+      setListOfMessages((messages) => [...messages]);
     });
 
     return () => {

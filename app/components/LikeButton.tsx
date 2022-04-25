@@ -1,7 +1,7 @@
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { useSocket } from "~/context";
-import { Like } from "~/models/like.server";
+import { LikeWithUser } from "~/models/like.server";
 import { MessageWithUser } from "~/models/message.server";
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
 };
 
 type FetcherData = {
-  like: Like;
+  like: LikeWithUser;
 };
 
 export default function LikeButton({ message, emoji }: Props) {
