@@ -1,12 +1,13 @@
-import { ActionFunction, json, LoaderFunction } from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
+import type { User } from "~/models/user.server";
 import {
   activateUser,
   deactivateUser,
   getActiveUsers,
   getInactiveUsers,
   getUserById,
-  User,
 } from "~/models/user.server";
 import { requireActiveUser } from "~/session.server";
 
@@ -94,7 +95,7 @@ export default function UserIndex() {
       {response && <div className="alert alert-success mb-4">{response}</div>}
       <div className="mb-4">
         <h1>User Index</h1>
-        <table className="table-zebra table w-full">
+        <table className="table table-zebra w-full">
           <thead>
             <tr>
               <th>User</th>
@@ -130,7 +131,7 @@ export default function UserIndex() {
       </div>
       <div>
         <h1>Pending Users</h1>
-        <table className="table-zebra table w-full">
+        <table className="table table-zebra w-full">
           <thead>
             <tr>
               <th>User</th>

@@ -1,13 +1,13 @@
-import {
+import type {
   ActionFunction,
-  json,
   LoaderFunction,
-  unstable_parseMultipartFormData,
   UploadHandler,
 } from "@remix-run/node";
+import { json, unstable_parseMultipartFormData } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { hasSecureUrl, uploadImage } from "~/cloudinary.server";
-import { updateUser, UpdateUserData, User } from "~/models/user.server";
+import type { UpdateUserData, User } from "~/models/user.server";
+import { updateUser } from "~/models/user.server";
 import { requireActiveUser } from "~/session.server";
 
 type ActionData = {

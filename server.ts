@@ -5,7 +5,8 @@ import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { Like, Message, PrismaClient } from "@prisma/client";
+import type { Like, Message } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const app = express();
 
