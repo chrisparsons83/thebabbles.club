@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { Form, Link } from "@remix-run/react";
 
 type Props = {

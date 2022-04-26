@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ActionFunction, json, LoaderFunction } from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
 import Autolinker from "autolinker";
@@ -9,16 +10,14 @@ import invariant from "tiny-invariant";
 
 import { requireActiveUser } from "~/session.server";
 import type { PostWithMessages } from "~/models/post.server";
-import {
-  createMessage,
-  Message,
-  MessageWithUser,
-} from "~/models/message.server";
+import type { Message, MessageWithUser } from "~/models/message.server";
+import { createMessage } from "~/models/message.server";
 import { getPost } from "~/models/post.server";
 import MessageComponent from "~/components/Message";
 import MessageForm from "~/components/MessageForm";
 import { useSocket } from "~/context";
-import { createLike, Like, LikeWithUser } from "~/models/like.server";
+import type { Like, LikeWithUser } from "~/models/like.server";
+import { createLike } from "~/models/like.server";
 
 type LoaderData = {
   post: PostWithMessages;

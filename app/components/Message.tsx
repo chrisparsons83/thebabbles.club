@@ -2,7 +2,7 @@ import parse from "html-react-parser";
 import { useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 
-import { MessageWithUser } from "~/models/message.server";
+import type { MessageWithUser } from "~/models/message.server";
 import LikeButton from "./LikeButton";
 import MessageForm from "./MessageForm";
 

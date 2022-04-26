@@ -1,7 +1,9 @@
-import { json, LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { requireActiveUser } from "~/session.server";
 
-import { getPosts, Post } from "~/models/post.server";
+import type { Post } from "~/models/post.server";
+import { getPosts } from "~/models/post.server";
 import { Link, useLoaderData } from "@remix-run/react";
 
 type LoaderData = {

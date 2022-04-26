@@ -1,4 +1,5 @@
-import cloudinary, { UploadApiResponse } from "cloudinary";
+import type { UploadApiResponse } from "cloudinary";
+import cloudinary from "cloudinary";
 import type { Stream } from "stream";
 
 cloudinary.v2.config({

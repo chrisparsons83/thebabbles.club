@@ -1,4 +1,4 @@
-import { Message, Post } from "@prisma/client";
+import type { Message, Post } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import { useSocket } from "~/context";
