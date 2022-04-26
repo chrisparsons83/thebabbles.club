@@ -24,6 +24,7 @@ type ActionData = {
 };
 
 type LoaderData = {
+  currentUser: User;
   activeUsers: User[];
   inactiveUsers: User[];
 };
@@ -75,15 +76,16 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  await requireActiveUser(request);
+  const currentUser = await requireActiveUser(request);
   const activeUsers = await getActiveUsers();
   const inactiveUsers = await getInactiveUsers();
-  return json<LoaderData>({ activeUsers, inactiveUsers });
+  return json<LoaderData>({ currentUser, activeUsers, inactiveUsers });
 };
 
 export default function UserIndex() {
   const actionData = useActionData() as ActionData;
-  const { activeUsers, inactiveUsers } = useLoaderData<LoaderData>();
+  const { currentUser, activeUsers, inactiveUsers } =
+    useLoaderData<LoaderData>();
 
   const response = actionData?.response;
 
@@ -104,9 +106,11 @@ export default function UserIndex() {
               <tr key={user.id}>
                 <td>{user.username}</td>
                 <td className="text-right">
-                  <Link className="btn btn-primary" to={`${user.id}/edit`}>
-                    Edit
-                  </Link>
+                  {currentUser.id === user.id && (
+                    <Link className="btn btn-primary" to={`${user.id}/edit`}>
+                      Edit
+                    </Link>
+                  )}
                   <Form className="ml-4 inline" method="post">
                     <input type="hidden" name="userId" value={user.id} />
                     <button

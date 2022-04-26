@@ -21,6 +21,8 @@ model User {
   messages Message[]
   likes    Like[]
 
+  avatar   String?
+
   isActive Boolean @default(false)
 }
 

@@ -5,6 +5,10 @@ import { prisma } from "~/db.server";
 
 export type { User } from "@prisma/client";
 
+export type UpdateUserData = Partial<User> & {
+  password?: string;
+};
+
 export async function getUserById(id: User["id"]) {
   return prisma.user.findUnique({ where: { id } });
 }
@@ -42,6 +46,27 @@ export async function createUser(
         },
       },
     },
+  });
+}
+
+export async function updateUser(
+  id: User["id"],
+  { password, ...dataToUpdate }: UpdateUserData
+) {
+  // TODO: Figure out this type
+  const dataToSend: any = { ...dataToUpdate };
+  if (password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    dataToSend.password = {
+      update: {
+        hash: hashedPassword,
+      },
+    };
+  }
+
+  return prisma.user.update({
+    where: { id },
+    data: dataToUpdate,
   });
 }
 
