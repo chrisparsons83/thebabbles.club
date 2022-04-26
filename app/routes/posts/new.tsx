@@ -1,10 +1,6 @@
 import { useEffect, useRef } from "react";
-import {
-  ActionFunction,
-  json,
-  LoaderFunction,
-  redirect,
-} from "@remix-run/node";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import { requireActiveUser } from "~/session.server";
 import { createNote } from "~/models/post.server";
