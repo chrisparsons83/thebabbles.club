@@ -14,9 +14,10 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 
-import { User } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import type { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
@@ -76,7 +77,7 @@ export default function App() {
       <body className="h-full">
         <SocketProvider socket={socket}>
           <Navbar user={user} />
-          <div className="px-4 md:container md:mx-auto">
+          <div className="prose px-4 md:container md:mx-auto">
             <Outlet />
           </div>
           <DominosModal />
