@@ -32,29 +32,30 @@ export default function LikeButton({ message, emoji }: Props) {
   }, [fetcher.data, fetcher.state, lastState, socket]);
 
   return (
-    <>
-      <fetcher.Form method="post" className="inline">
+    <div className="flex flex-none">
+      <fetcher.Form method="post" className="mr-1 inline flex-none">
         <input type="hidden" name="messageId" value={message!.id} />
         <input type="hidden" name="emoji" value={emoji} />
         <button
           type="submit"
-          className="btn btn-secondary btn-xs"
+          className="btn btn-secondary btn-sm"
           name="_action"
           value="like"
         >
           {emoji}
         </button>
       </fetcher.Form>
-      <div className="avatar-group -space-x-6">
+      <div className="avatar-group flex-none -space-x-3">
         {message &&
           message.likes &&
           message.likes.length > 0 &&
           message.likes.map((like) => {
             if (!like) return null;
+            if (like.emoji !== emoji) return null;
             const { user } = like;
             if (user.avatar) {
               <div className="avatar" key={like.id}>
-                <div className="w-12">
+                <div className="w-6">
                   <img
                     src={user.avatar}
                     alt={user.username}
@@ -66,7 +67,7 @@ export default function LikeButton({ message, emoji }: Props) {
             }
             return (
               <div className="avatar placeholder" key={like.id}>
-                <div className="w-12 rounded-full bg-neutral-focus text-neutral-content">
+                <div className="w-6 rounded-full bg-neutral-focus text-neutral-content">
                   <span className="tooltip" data-tip={user.username}>
                     {user.username.slice(0, 1).toUpperCase()}
                   </span>
@@ -75,6 +76,6 @@ export default function LikeButton({ message, emoji }: Props) {
             );
           })}
       </div>
-    </>
+    </div>
   );
 }

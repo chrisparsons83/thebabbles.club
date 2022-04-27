@@ -52,13 +52,17 @@ export default function MessageComponent({
           />
         </div>
         <div className="break-words py-2 pl-12">{parse(message.text)}</div>
-        <div className="pl-12">
+        <div className="mt-2 flex gap-4 pl-12">
           {depth < 4 && (
-            <button onClick={toggleForm} className="btn btn-primary btn-xs">
+            <button
+              onClick={toggleForm}
+              className="btn btn-primary btn-sm flex-none"
+            >
               Reply
             </button>
           )}
           <LikeButton message={message} emoji="👍" />
+          <LikeButton message={message} emoji="👎" />
         </div>
       </div>
       {message && showMessageForm && (
