@@ -3,6 +3,7 @@ import { useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 
 import type { MessageWithUser } from "~/models/message.server";
+import ImagePreview from "./ImagePreview";
 import LikeButton from "./LikeButton";
 import MessageForm from "./MessageForm";
 
@@ -10,6 +11,13 @@ type Props = {
   message: MessageWithUser;
   depth: number;
   allMessages?: MessageWithUser[];
+};
+
+const getImagesFromString = (text: string, numberToShow: number = 1) => {
+  const regex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|gifv))"/gi;
+  const matches = text.match(regex);
+  if (!matches) return [];
+  return [...new Set(matches.map((match) => match.trim().replace('"', "")))];
 };
 
 export default function MessageComponent({
@@ -31,6 +39,7 @@ export default function MessageComponent({
   if (!message) return null;
 
   const messageDate = new Date(message.createdAt);
+  const imagesToDisplay = getImagesFromString(message.text);
 
   return (
     <div>
@@ -52,6 +61,11 @@ export default function MessageComponent({
           />
         </div>
         <div className="break-words py-2 pl-12">{parse(message.text)}</div>
+        <div className="pl-12">
+          {imagesToDisplay.map((image) => (
+            <ImagePreview image={image} key={image} />
+          ))}
+        </div>
         <div className="mt-2 flex gap-4 pl-12">
           {depth < 4 && (
             <button
