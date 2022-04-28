@@ -17,7 +17,9 @@ const getImagesFromString = (text: string, numberToShow: number = 1) => {
   const regex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|gifv))"/gi;
   const matches = text.match(regex);
   if (!matches) return [];
-  return [...new Set(matches.map((match) => match.trim().replace('"', "")))];
+  return [
+    ...new Set(matches.map((match) => match.trim().replace('"', ""))),
+  ].slice(0, numberToShow);
 };
 
 export default function MessageComponent({
