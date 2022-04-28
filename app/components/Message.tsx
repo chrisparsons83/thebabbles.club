@@ -14,7 +14,7 @@ type Props = {
 };
 
 const getImagesFromString = (text: string, numberToShow: number = 1) => {
-  const regex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|gifv))"/gi;
+  const regex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|gifv|webm))"/gi;
   const matches = text.match(regex);
   if (!matches) return [];
   return [
@@ -49,10 +49,7 @@ export default function MessageComponent({
         <div>
           <div className="avatar">
             <div className="ml-4 mr-2 w-6 rounded">
-              <img
-                src="https://api.lorem.space/image/face?hash=83692"
-                alt="face"
-              />
+              <img src="https://via.placeholder.com/150" alt="face" />
             </div>
           </div>
           <span className="font-bold">{message!.user.username}</span>{" "}
@@ -60,15 +57,18 @@ export default function MessageComponent({
             date={messageDate}
             locale="en-US"
             timeStyle="round-minute"
+            className="text-xs font-light italic"
           />
         </div>
-        <div className="break-words py-2 pl-12">{parse(message.text)}</div>
-        <div className="pl-12">
+        <div className="break-words py-2 pl-4 md:pl-12">
+          {parse(message.text)}
+        </div>
+        <div className="pl-4 md:pl-12">
           {imagesToDisplay.map((image) => (
             <ImagePreview image={image} key={image} />
           ))}
         </div>
-        <div className="mt-2 flex gap-4 pl-12">
+        <div className="mt-2 flex gap-4 pl-4 md:pl-12">
           {depth < 4 && (
             <button
               onClick={toggleForm}
