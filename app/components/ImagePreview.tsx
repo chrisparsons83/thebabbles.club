@@ -18,7 +18,7 @@ export default function ImagePreview({ image }: Props) {
       </button>
     );
 
-  const gifvRegex = /gifv$/;
+  const gifvRegex = /(gifv|mp4)$/;
   if (gifvRegex.test(image))
     return (
       <div>
