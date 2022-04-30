@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import parse from "html-react-parser";
 import { useState } from "react";
 import ReactTimeAgo from "react-time-ago";
@@ -22,6 +23,14 @@ const getImagesFromString = (text: string, numberToShow: number = 1) => {
   ].slice(0, numberToShow);
 };
 
+const depthTheming = [
+  "border-gray-200",
+  "border-gray-300",
+  "border-gray-400",
+  "border-gray-500",
+  "border-gray-600",
+];
+
 export default function MessageComponent({
   message,
   depth,
@@ -42,57 +51,64 @@ export default function MessageComponent({
 
   const messageDate = new Date(message.createdAt);
   const imagesToDisplay = getImagesFromString(message.text);
+  const borderTheme = depthTheming[depth];
+  const avatarToDisplay =
+    message.user?.avatar || "https://via.placeholder.com/50";
 
   return (
-    <div>
-      <div className="py-6">
-        <div>
-          <div className="avatar">
-            <div className="ml-4 mr-2 w-6 rounded">
-              <img src="https://via.placeholder.com/150" alt="face" />
+    <div className="pt-4">
+      <div className="border-b border-slate-700 pb-4 pl-4">
+        <div className="mb-3 flex">
+          <div className="not-prose avatar flex-none">
+            <div className="mr-2 w-6 rounded">
+              <img src={avatarToDisplay} alt="" />
             </div>
           </div>
-          <span className="font-bold">{message!.user.username}</span>{" "}
-          <ReactTimeAgo
-            date={messageDate}
-            locale="en-US"
-            timeStyle="round-minute"
-            className="text-xs font-light italic"
-          />
+          <div className="flex-none">
+            <span className="font-bold">{message!.user.username}</span>
+            {" ∙ "}
+            <ReactTimeAgo
+              date={messageDate}
+              locale="en-US"
+              timeStyle="round-minute"
+              className="text-xs font-light italic"
+            />
+          </div>
         </div>
-        <div className="break-words py-2 pl-4 md:pl-12">
-          {parse(message.text)}
-        </div>
-        <div className="pl-4 md:pl-12">
-          {imagesToDisplay.map((image) => (
-            <ImagePreview image={image} key={image} />
-          ))}
-        </div>
-        <div className="mt-2 flex gap-4 pl-4 md:pl-12">
-          {depth < 4 && (
-            <button
-              onClick={toggleForm}
-              className="btn btn-primary btn-sm flex-none"
-            >
-              Reply
-            </button>
+        <div>
+          <div className="">{parse(message.text)}</div>
+          <div className="">
+            {imagesToDisplay.map((image) => (
+              <ImagePreview image={image} key={image} />
+            ))}
+          </div>
+          <div className="mt-4 flex gap-0.5">
+            {depth < 4 && (
+              <button
+                onClick={toggleForm}
+                className="btn btn-primary btn-sm flex-none"
+              >
+                Reply
+              </button>
+            )}
+            <LikeButton message={message} emoji="👍" />
+            <LikeButton message={message} emoji="👎" />
+          </div>
+
+          {message && showMessageForm && (
+            <MessageForm
+              id={message.postId}
+              parentId={message.id}
+              toggleForm={toggleForm}
+            />
           )}
-          <LikeButton message={message} emoji="👍" />
-          <LikeButton message={message} emoji="👎" />
         </div>
       </div>
-      {message && showMessageForm && (
-        <MessageForm
-          id={message.postId}
-          parentId={message.id}
-          toggleForm={toggleForm}
-        />
-      )}
       {childMessages &&
         childMessages.length > 0 &&
         childMessages.map((message) => (
           <div
-            className="border-l-8 border-gray-200 bg-neutral"
+            className={clsx(borderTheme, "border-l-8", "bg-neutral")}
             key={message!.id}
           >
             <MessageComponent

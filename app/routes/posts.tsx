@@ -9,9 +9,5 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function NewPostPage() {
-  return (
-    <div className="px-4 md:container md:mx-auto">
-      <Outlet />
-    </div>
-  );
+  return <Outlet />;
 }

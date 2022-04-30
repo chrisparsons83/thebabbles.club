@@ -35,7 +35,7 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
   }, []);
 
   return (
-    <fetcher.Form method="post" className="mb-8" ref={formRef}>
+    <fetcher.Form method="post" ref={formRef} className="mt-2">
       <div>
         <label htmlFor="text" className="form-control">
           Message:
