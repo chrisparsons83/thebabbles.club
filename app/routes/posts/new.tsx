@@ -85,6 +85,7 @@ export default function NewPostPage() {
 
   return (
     <div>
+      <h1>New Post</h1>
       <Form method="post">
         <div>
           <label htmlFor="title">
@@ -94,13 +95,14 @@ export default function NewPostPage() {
               name="title"
               defaultValue={actionData?.fields?.title}
               ref={titleRef}
+              className="block"
             />
+            {actionData?.errors?.title && (
+              <div className="pt-1 text-red-700" id="title-error">
+                {actionData.errors.title}
+              </div>
+            )}
           </label>
-          {actionData?.errors?.title && (
-            <div className="pt-1 text-red-700" id="title-error">
-              {actionData.errors.title}
-            </div>
-          )}
         </div>
 
         <div>
@@ -111,6 +113,7 @@ export default function NewPostPage() {
               name="gif"
               defaultValue={actionData?.fields?.gif}
               ref={gifRef}
+              className="block"
             />
             {actionData?.errors?.gif && (
               <div className="pt-1 text-red-700" id="gif-error">
@@ -126,7 +129,7 @@ export default function NewPostPage() {
               {actionData.formError}
             </p>
           ) : null}
-          <button type="submit" className="button">
+          <button type="submit" className="btn btn-primary mt-4">
             Post
           </button>
         </div>
