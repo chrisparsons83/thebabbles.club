@@ -1,5 +1,7 @@
 import { useFetcher } from "@remix-run/react";
+import clsx from "clsx";
 import { useEffect, useState } from "react";
+import { useBabblesContext } from "~/babblesContext";
 import { useSocket } from "~/context";
 import type { LikeWithUser } from "~/models/like.server";
 import type { MessageWithUser } from "~/models/message.server";
@@ -17,6 +19,7 @@ export default function LikeButton({ message, emoji }: Props) {
   const fetcher = useFetcher<FetcherData>();
   const [lastState, setLastState] = useState("");
   const socket = useSocket();
+  const { user } = useBabblesContext();
 
   useEffect(() => {
     if (
@@ -25,11 +28,21 @@ export default function LikeButton({ message, emoji }: Props) {
       lastState !== "submitting" &&
       socket
     ) {
+      console.log(fetcher.data);
       socket.emit("likePosted", fetcher.data.like);
     }
 
     setLastState(fetcher.state);
   }, [fetcher.data, fetcher.state, lastState, socket]);
+
+  if (!message) return null;
+
+  const filteredLikesByEmoji = message.likes.filter(
+    (like) => like.emoji === emoji
+  );
+  const userLikedThisLike = filteredLikesByEmoji.some((like) => {
+    return like.userId === user?.id;
+  });
 
   return (
     <div className="flex flex-none">
@@ -38,16 +51,20 @@ export default function LikeButton({ message, emoji }: Props) {
         <input type="hidden" name="emoji" value={emoji} />
         <button
           type="submit"
-          className="btn btn-secondary btn-sm"
+          className={clsx(
+            "btn",
+            "btn-sm",
+            userLikedThisLike ? "btn-secondary-focus" : "btn-secondary"
+          )}
           name="_action"
           value="like"
         >
           {emoji}
         </button>
       </fetcher.Form>
-      {message && message.likes && message.likes.length > 0 && (
+      {filteredLikesByEmoji.length > 0 && (
         <div className="avatar-group flex-none -space-x-3 px-1">
-          {message.likes.map((like) => {
+          {filteredLikesByEmoji.map((like) => {
             if (!like) return null;
             if (like.emoji !== emoji) return null;
             const { user } = like;

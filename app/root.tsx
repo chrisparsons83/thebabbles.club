@@ -26,6 +26,7 @@ import { SocketProvider } from "./context";
 import DominosModal from "./components/DominosModal";
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en.json";
+import { BabblesProvider, useBabblesContext } from "./babblesContext";
 
 TimeAgo.addLocale(en);
 
@@ -49,9 +50,10 @@ export const loader: LoaderFunction = async ({ request }) => {
   });
 };
 
-export default function App() {
+export function App() {
   const { user } = useLoaderData<LoaderData>();
   const [socket, setSocket] = useState<Socket>();
+  const { setUser } = useBabblesContext();
 
   useEffect(() => {
     const socket = io();
@@ -60,6 +62,10 @@ export default function App() {
       socket.close();
     };
   }, []);
+
+  useEffect(() => {
+    setUser(user);
+  }, [user, setUser]);
 
   useEffect(() => {
     if (!socket) return;
@@ -87,5 +93,13 @@ export default function App() {
         <LiveReload />
       </body>
     </html>
+  );
+}
+
+export default function AppWithProvider() {
+  return (
+    <BabblesProvider>
+      <App />
+    </BabblesProvider>
   );
 }
