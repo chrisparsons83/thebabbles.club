@@ -4,7 +4,7 @@ export type { Post } from "@prisma/client";
 
 export type PostWithMessages = Prisma.PromiseReturnType<typeof getPost>;
 
-export function createNote({
+export function createPost({
   title,
   gif,
   userId,

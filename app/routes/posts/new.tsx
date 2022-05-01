@@ -1,9 +1,15 @@
 import { useEffect, useRef } from "react";
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type {
+  ActionFunction,
+  LoaderFunction,
+  UploadHandler,
+} from "@remix-run/node";
+import { unstable_parseMultipartFormData } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import { requireActiveUser } from "~/session.server";
-import { createNote } from "~/models/post.server";
+import { createPost } from "~/models/post.server";
+import { hasSecureUrl, uploadImage } from "~/cloudinary.server";
 
 type ActionData = {
   formError?: string;
@@ -45,7 +51,22 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const { id: userId } = await requireActiveUser(request);
 
-  const formData = await request.formData();
+  const uploadHandler: UploadHandler = async ({ name, stream, filename }) => {
+    if (name !== "gif" || (name === "gif" && !filename)) {
+      stream.resume();
+      return;
+    }
+    const uploadedImage = await uploadImage(stream, "avatars").catch((err) =>
+      console.error(err)
+    );
+    return hasSecureUrl(uploadedImage) ? uploadedImage.secure_url : "";
+  };
+
+  const formData = await unstable_parseMultipartFormData(
+    request,
+    uploadHandler
+  );
+
   const title = formData.get("title");
   const gif = formData.get("gif");
 
@@ -65,7 +86,7 @@ export const action: ActionFunction = async ({ request }) => {
     return json<ActionData>({ errors, fields }, { status: 400 });
   }
 
-  const post = await createNote({ title, gif, userId });
+  const post = await createPost({ title, gif, userId });
 
   return redirect(`/posts/${post.id}`);
 };
@@ -86,7 +107,7 @@ export default function NewPostPage() {
   return (
     <div>
       <h1>New Post</h1>
-      <Form method="post">
+      <Form method="post" encType="multipart/form-data">
         <div>
           <label htmlFor="title">
             Title:
@@ -109,9 +130,9 @@ export default function NewPostPage() {
           <label htmlFor="gif">
             Post Image:
             <input
-              type="text"
+              type="file"
               name="gif"
-              defaultValue={actionData?.fields?.gif}
+              accept="image/*"
               ref={gifRef}
               className="block"
             />

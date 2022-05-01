@@ -16,6 +16,8 @@ type ActionData = {
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  await requireActiveUser(request);
+
   const uploadHandler: UploadHandler = async ({ name, stream, filename }) => {
     if (name !== "avatar" || (name === "avatar" && !filename)) {
       stream.resume();
