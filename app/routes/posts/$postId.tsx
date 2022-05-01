@@ -17,6 +17,7 @@ import MessageComponent from "~/components/Message";
 import MessageForm from "~/components/MessageForm";
 import { useSocket } from "~/context";
 import type { Like, LikeWithUser } from "~/models/like.server";
+import { deleteLike, findLikeByUserAndMessage } from "~/models/like.server";
 import { createLike } from "~/models/like.server";
 
 type LoaderData = {
@@ -41,6 +42,7 @@ type ActionData = {
   };
   message?: Message;
   like?: Like;
+  unlike?: Like;
 };
 
 function validateText(text: string) {
@@ -136,6 +138,30 @@ export const action: ActionFunction = async ({ request }) => {
 
       return json<ActionData>({ like });
     }
+    case "unlike": {
+      const emoji = formData.get("emoji");
+      const messageId = formData.get("messageId");
+
+      if (typeof emoji !== "string" || typeof messageId !== "string") {
+        return json<ActionData>(
+          { formError: "Form was not submitted correctly." },
+          { status: 400 }
+        );
+      }
+
+      const like = await findLikeByUserAndMessage({ userId, emoji, messageId });
+
+      if (!like) {
+        return json<ActionData>(
+          { formError: "Like does not exist." },
+          { status: 400 }
+        );
+      }
+
+      await deleteLike({ id: like.id });
+
+      return json<ActionData>({ unlike: like });
+    }
   }
 };
 
@@ -181,6 +207,22 @@ export default function PostPage() {
 
       if (!message) return;
       message.likes.push(newLike);
+      setListOfMessages((messages) => [...messages]);
+    });
+
+    socket.on("unlikePosted", (newUnlike: LikeWithUser) => {
+      if (!newUnlike) return;
+
+      const message = listOfMessages.find((message) => {
+        return message && message.id === newUnlike.messageId;
+      });
+
+      if (!message) return;
+
+      message.likes = message.likes.filter((like) => {
+        return like.id !== newUnlike.id;
+      });
+
       setListOfMessages((messages) => [...messages]);
     });
 

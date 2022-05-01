@@ -7,6 +7,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import type { Like, Message } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
+import type { LikeWithUser } from "~/models/like.server";
 
 const app = express();
 
@@ -63,6 +64,12 @@ io.on("connection", (socket) => {
     if (!fullLike) return;
 
     socket.broadcast.to(fullLike.message.postId).emit("likePosted", fullLike);
+  });
+
+  socket.on("unlikePosted", async (unlike: LikeWithUser) => {
+    if (!unlike) return;
+
+    socket.broadcast.to(unlike.message.postId).emit("unlikePosted", unlike);
   });
 });
 

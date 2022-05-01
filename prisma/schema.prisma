@@ -87,4 +87,6 @@ model Like {
 
   message   Message    @relation(fields: [messageId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   messageId String
+
+  @@unique([emoji, userId, messageId])
 }

@@ -51,8 +51,6 @@ export const action: ActionFunction = async ({ request }) => {
     return json<ActionData>({ error: "Form was not submitted correctly." });
   }
 
-  console.log(avatar);
-
   if (password !== confirmPassword) {
     return json<ActionData>({ error: "Passwords do not match." });
   }

@@ -37,3 +37,33 @@ export function getLike({ id }: Pick<Like, "id">) {
     },
   });
 }
+
+export function findLikeByUserAndMessage({
+  userId,
+  messageId,
+  emoji,
+}: Pick<Like, "userId" | "messageId" | "emoji">) {
+  return prisma.like.findFirst({
+    where: {
+      user: {
+        id: userId,
+      },
+      message: {
+        id: messageId,
+      },
+      emoji,
+    },
+    include: {
+      user: true,
+      message: true,
+    },
+  });
+}
+
+export function deleteLike({ id }: Pick<Like, "id">) {
+  return prisma.like.delete({
+    where: {
+      id,
+    },
+  });
+}

@@ -12,7 +12,8 @@ type Props = {
 };
 
 type FetcherData = {
-  like: LikeWithUser;
+  like?: LikeWithUser;
+  unlike?: LikeWithUser;
 };
 
 export default function LikeButton({ message, emoji }: Props) {
@@ -28,8 +29,12 @@ export default function LikeButton({ message, emoji }: Props) {
       lastState !== "submitting" &&
       socket
     ) {
-      console.log(fetcher.data);
-      socket.emit("likePosted", fetcher.data.like);
+      if (fetcher.data.like) {
+        socket.emit("likePosted", fetcher.data.like);
+      }
+      if (fetcher.data.unlike) {
+        socket.emit("unlikePosted", fetcher.data.unlike);
+      }
     }
 
     setLastState(fetcher.state);
@@ -57,7 +62,7 @@ export default function LikeButton({ message, emoji }: Props) {
             userLikedThisLike ? "btn-secondary-focus" : "btn-secondary"
           )}
           name="_action"
-          value="like"
+          value={userLikedThisLike ? "unlike" : "like"}
         >
           {emoji}
         </button>
