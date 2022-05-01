@@ -22,11 +22,17 @@ export async function getUserByUsername(username: User["username"]) {
 }
 
 export async function getActiveUsers() {
-  return prisma.user.findMany({ where: { isActive: true } });
+  return prisma.user.findMany({
+    where: { isActive: true },
+    orderBy: [{ username: "asc" }],
+  });
 }
 
 export async function getInactiveUsers() {
-  return prisma.user.findMany({ where: { isActive: false } });
+  return prisma.user.findMany({
+    where: { isActive: false },
+    orderBy: [{ username: "asc" }],
+  });
 }
 
 export async function createUser(
