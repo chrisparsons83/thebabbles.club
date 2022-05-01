@@ -27,6 +27,7 @@ import DominosModal from "./components/DominosModal";
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en.json";
 import { BabblesProvider, useBabblesContext } from "./babblesContext";
+import Drawer from "./components/Drawer";
 
 TimeAgo.addLocale(en);
 
@@ -81,13 +82,15 @@ export function App() {
         <Links />
       </head>
       <body className="h-full">
-        <SocketProvider socket={socket}>
-          <Navbar user={user} />
-          <div className="prose px-4 md:container md:mx-auto">
-            <Outlet />
-          </div>
-          <DominosModal />
-        </SocketProvider>
+        <Drawer user={user}>
+          <SocketProvider socket={socket}>
+            <Navbar user={user} />
+            <div className="prose px-4 md:container md:mx-auto">
+              <Outlet />
+            </div>
+            <DominosModal />
+          </SocketProvider>
+        </Drawer>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

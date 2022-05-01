@@ -1,13 +1,11 @@
-import type { User } from "@prisma/client";
-import { Form, Link } from "@remix-run/react";
+import { Link } from "@remix-run/react";
+import type { User } from "~/models/user.server";
 
 type Props = {
   user: User | null;
 };
 
 export default function Navbar({ user }: Props) {
-  const showLogout = user !== null;
-
   return (
     <div className="mb-4 bg-primary py-2">
       <div className="flex px-4 md:container md:mx-auto">
@@ -15,12 +13,13 @@ export default function Navbar({ user }: Props) {
           <Link to="/">The Babbles</Link>
         </div>
         <div className="flex-none">
-          {showLogout && (
-            <Form action="/logout" method="post">
-              <button type="submit" className="btn btn-secondary rounded px-2">
-                Logout
-              </button>
-            </Form>
+          {user && (
+            <label
+              htmlFor="my-drawer"
+              className="btn btn-secondary drawer-button"
+            >
+              Menu
+            </label>
           )}
         </div>
       </div>
