@@ -51,7 +51,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const user = await verifyLogin(email, password);
+  const user = await verifyLogin(email.toLowerCase(), password);
 
   if (!user) {
     return json<ActionData>(
