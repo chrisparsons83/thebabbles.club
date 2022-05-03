@@ -44,7 +44,7 @@ export async function createUser(
 
   return prisma.user.create({
     data: {
-      email,
+      email: email.toLowerCase(),
       username,
       password: {
         create: {
@@ -85,7 +85,7 @@ export async function verifyLogin(
   password: Password["hash"]
 ) {
   const userWithPassword = await prisma.user.findUnique({
-    where: { email },
+    where: { email: email.toLowerCase() },
     include: {
       password: true,
     },
