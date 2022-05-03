@@ -76,7 +76,7 @@ export default function MessageComponent({
           </div>
         </div>
         <div>
-          <div className="break-words">{parse(message.text)}</div>
+          <div className="break-words py-4">{parse(message.text)}</div>
           <div className="">
             {imagesToDisplay.map((image) => (
               <ImagePreview image={image} key={image} />
