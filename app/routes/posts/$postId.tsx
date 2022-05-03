@@ -250,20 +250,22 @@ export default function PostPage() {
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
       <MessageForm id={data.post.id} />
-      {messageDisplay
-        .filter((message) => message && !message.parentId)
-        .map((message) => {
-          return (
-            message && (
-              <MessageComponent
-                message={message}
-                depth={0}
-                allMessages={messageDisplay}
-                key={message.id}
-              />
-            )
-          );
-        })}
+      <div className="pt-8">
+        {messageDisplay
+          .filter((message) => message && !message.parentId)
+          .map((message) => {
+            return (
+              message && (
+                <MessageComponent
+                  message={message}
+                  depth={0}
+                  allMessages={messageDisplay}
+                  key={message.id}
+                />
+              )
+            );
+          })}
+      </div>
     </div>
   );
 }

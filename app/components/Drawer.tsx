@@ -25,7 +25,7 @@ export default function Drawer({ user, children }: Props) {
         className="drawer-toggle"
         ref={drawerCheckboxRef}
       />
-      <div className="drawer-content">{children}</div>
+      <div className="drawer-content pb-4">{children}</div>
       <div className="drawer-side">
         <label htmlFor="my-drawer" className="drawer-overlay"></label>
         <ul className="menu w-80 overflow-y-auto bg-base-100 p-4 text-base-content">

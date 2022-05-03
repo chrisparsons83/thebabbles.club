@@ -20,11 +20,11 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
   useEffect(() => {
     if (fetcher.state === "idle") {
       if (lastState === "loading" && toggleForm) toggleForm();
-      formRef.current?.reset();
     }
 
     if (fetcher.state === "loading" && lastState !== "submitting" && socket) {
       socket.emit("messagePosted", fetcher.data.message);
+      formRef.current?.reset();
     }
 
     setLastState(fetcher.state);
