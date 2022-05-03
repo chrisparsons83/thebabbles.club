@@ -16,7 +16,7 @@ async function deleteUser(email: string) {
     throw new Error("All test emails must end in @example.com");
   }
 
-  await prisma.user.delete({ where: { email } });
+  await prisma.user.delete({ where: { email: email.toLowerCase() } });
 }
 
 deleteUser(process.argv[2]);
