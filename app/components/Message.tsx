@@ -2,6 +2,7 @@ import clsx from "clsx";
 import parse from "html-react-parser";
 import { useState } from "react";
 import ReactTimeAgo from "react-time-ago";
+import { useBabblesContext } from "~/babblesContext";
 
 import type { MessageWithUser } from "~/models/message.server";
 import ImagePreview from "./ImagePreview";
@@ -37,8 +38,15 @@ export default function MessageComponent({
   allMessages,
 }: Props) {
   const [showMessageForm, setShowMessageForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const { user } = useBabblesContext();
 
   const toggleForm = () => {
+    setShowMessageForm((prevState) => !prevState);
+  };
+
+  const toggleEditForm = () => {
+    setShowEditForm((prevState) => !prevState);
     setShowMessageForm((prevState) => !prevState);
   };
 
@@ -47,7 +55,9 @@ export default function MessageComponent({
     .reverse()
     .slice();
 
-  if (!message) return null;
+  if (!message || !user) return null;
+
+  const isWrittenByCurrentUser = message.userId === user?.id;
 
   const messageDate = new Date(message.createdAt);
   const imagesToDisplay = getImagesFromString(message.text);
@@ -60,7 +70,7 @@ export default function MessageComponent({
       <div className="border-b border-slate-700 pb-4 pl-4">
         <div className="mb-3 flex">
           <div className="not-prose avatar flex-none">
-            <div className="mr-2 w-6 rounded">
+            <div className="not-prose mr-2 w-6 rounded">
               <img src={avatarToDisplay} alt="" />
             </div>
           </div>
@@ -87,8 +97,18 @@ export default function MessageComponent({
               <button
                 onClick={toggleForm}
                 className="btn btn-primary btn-sm flex-none"
+                disabled={showEditForm}
               >
                 Reply
+              </button>
+            )}
+            {isWrittenByCurrentUser && (
+              <button
+                onClick={toggleEditForm}
+                className="btn btn-primary btn-sm flex-none"
+                disabled={showMessageForm && !showEditForm}
+              >
+                Edit
               </button>
             )}
             <LikeButton message={message} emoji="👍" />
@@ -100,6 +120,7 @@ export default function MessageComponent({
               id={message.postId}
               parentId={message.id}
               toggleForm={toggleForm}
+              existingMessage={showEditForm ? message : undefined}
             />
           )}
         </div>
@@ -108,7 +129,7 @@ export default function MessageComponent({
         childMessages.length > 0 &&
         childMessages.map((message) => (
           <div
-            className={clsx(borderTheme, "border-l-8", "bg-neutral")}
+            className={clsx(borderTheme, "border-l-8", "bg-neutral", "pl-1")}
             key={message!.id}
           >
             <MessageComponent
