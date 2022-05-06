@@ -3,6 +3,7 @@ import parse from "html-react-parser";
 import { useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 import { useBabblesContext } from "~/babblesContext";
+import { getFormattedMessageText } from "~/lib/format";
 
 import type { MessageWithUser } from "~/models/message.server";
 import ImagePreview from "./ImagePreview";
@@ -60,7 +61,8 @@ export default function MessageComponent({
   const isWrittenByCurrentUser = message.userId === user?.id;
 
   const messageDate = new Date(message.createdAt);
-  const imagesToDisplay = getImagesFromString(message.text);
+  const formattedMessage = getFormattedMessageText(message.text);
+  const imagesToDisplay = getImagesFromString(formattedMessage);
   const borderTheme = depthTheming[depth];
   const avatarToDisplay =
     message.user?.avatar || "https://via.placeholder.com/50";
@@ -86,7 +88,7 @@ export default function MessageComponent({
           </div>
         </div>
         <div>
-          <div className="break-words py-4">{parse(message.text)}</div>
+          <div className="break-words py-4">{parse(formattedMessage)}</div>
           <div className="">
             {imagesToDisplay.map((image) => (
               <ImagePreview image={image} key={image} />
