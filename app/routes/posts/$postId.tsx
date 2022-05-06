@@ -218,6 +218,20 @@ export default function PostPage() {
       setListOfMessages((messages) => [newMessage, ...messages]);
     });
 
+    socket.on("messageEdited", (editedMessage: MessageWithUser) => {
+      if (!editedMessage) return;
+      console.log({ editedMessage });
+
+      const message = listOfMessages.find((message) => {
+        return message && message.id === editedMessage.id;
+      });
+
+      if (!message) return;
+
+      message.text = editedMessage.text;
+      setListOfMessages((messages) => [...messages]);
+    });
+
     socket.on("likePosted", (newLike: LikeWithUser) => {
       if (!newLike) return;
 

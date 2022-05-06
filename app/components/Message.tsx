@@ -59,7 +59,6 @@ export default function MessageComponent({
   if (!message || !user) return null;
 
   const isWrittenByCurrentUser = message.userId === user?.id;
-
   const messageDate = new Date(message.createdAt);
   const formattedMessage = getFormattedMessageText(message.text);
   const imagesToDisplay = getImagesFromString(formattedMessage);
@@ -79,12 +78,13 @@ export default function MessageComponent({
           <div className="flex-none">
             <span className="font-bold">{message!.user.username}</span>
             {" ∙ "}
-            <ReactTimeAgo
-              date={messageDate}
-              locale="en-US"
-              timeStyle="round-minute"
-              className="text-xs font-light italic"
-            />
+            <span className="text-xs font-light italic">
+              <ReactTimeAgo
+                date={messageDate}
+                locale="en-US"
+                timeStyle="round-minute"
+              />
+            </span>
           </div>
         </div>
         <div>

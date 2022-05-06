@@ -30,6 +30,7 @@ export default function MessageForm({
     }
 
     if (fetcher.state === "loading" && lastState !== "submitting" && socket) {
+      console.log(fetcher.data);
       if (fetcher.data.message)
         socket.emit("messagePosted", fetcher.data.message);
       if (fetcher.data.editedMessage)

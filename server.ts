@@ -50,6 +50,23 @@ io.on("connection", (socket) => {
     socket.broadcast.to(message.postId).emit("messagePosted", messageWithUser);
   });
 
+  socket.on("messageEdited", async (message: Message) => {
+    if (!message) return;
+
+    const messageWithUser = await prisma.message.findFirst({
+      where: { id: message.id },
+      include: {
+        user: true,
+        likes: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+    socket.broadcast.to(message.postId).emit("messageEdited", messageWithUser);
+  });
+
   socket.on("likePosted", async (like: Like) => {
     const { id } = like;
 
