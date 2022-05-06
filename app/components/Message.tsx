@@ -51,6 +51,11 @@ export default function MessageComponent({
     setShowMessageForm((prevState) => !prevState);
   };
 
+  const resetButtons = () => {
+    setShowEditForm(false);
+    setShowMessageForm(false);
+  };
+
   const childMessages = allMessages
     ?.filter((m) => m?.parentId === message?.id)
     .reverse()
@@ -121,7 +126,7 @@ export default function MessageComponent({
             <MessageForm
               id={message.postId}
               parentId={message.id}
-              toggleForm={toggleForm}
+              toggleForm={resetButtons}
               existingMessage={showEditForm ? message : undefined}
             />
           )}

@@ -42,6 +42,8 @@ export default function MessageForm({
   }, [fetcher.data, fetcher.state, lastState, toggleForm, socket]);
 
   useEffect(() => {
+    const end = textareaRef?.current?.value.length || 0;
+    textareaRef.current?.setSelectionRange(end, end);
     textareaRef.current?.focus();
   }, []);
 
