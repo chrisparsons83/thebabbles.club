@@ -41,6 +41,7 @@ type ActionData = {
   message?: Message;
   like?: Like;
   unlike?: Like;
+  editedMessage?: Message;
 };
 
 function validateText(text: string) {
@@ -130,7 +131,7 @@ export const action: ActionFunction = async ({ request }) => {
 
       const message = await updateMessage(messageId, text);
 
-      return json<ActionData>({ message });
+      return json<ActionData>({ editedMessage: message });
     }
     case "like": {
       const emoji = formData.get("emoji");

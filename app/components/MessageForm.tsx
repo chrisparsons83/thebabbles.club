@@ -30,7 +30,10 @@ export default function MessageForm({
     }
 
     if (fetcher.state === "loading" && lastState !== "submitting" && socket) {
-      socket.emit("messagePosted", fetcher.data.message);
+      if (fetcher.data.message)
+        socket.emit("messagePosted", fetcher.data.message);
+      if (fetcher.data.editedMessage)
+        socket.emit("messageEdited", fetcher.data.editedMessage);
       formRef.current?.reset();
     }
 
