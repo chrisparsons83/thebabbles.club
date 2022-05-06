@@ -8,6 +8,7 @@ import invariant from "tiny-invariant";
 import { requireActiveUser } from "~/session.server";
 import type { PostWithMessages } from "~/models/post.server";
 import type { Message, MessageWithUser } from "~/models/message.server";
+import { updateMessage } from "~/models/message.server";
 import { createMessage } from "~/models/message.server";
 import { getPost } from "~/models/post.server";
 import MessageComponent from "~/components/Message";
@@ -103,6 +104,31 @@ export const action: ActionFunction = async ({ request }) => {
         postId,
         parentId,
       });
+
+      return json<ActionData>({ message });
+    }
+    case "updateMessage": {
+      const text = formData.get("text");
+      const messageId = formData.get("existingMessageId");
+
+      if (typeof text !== "string" || typeof messageId !== "string") {
+        return json<ActionData>(
+          { formError: "Form was not submitted correctly." },
+          { status: 400 }
+        );
+      }
+
+      const errors = {
+        text: validateText(text),
+      };
+
+      const fields = { text, messageId };
+
+      if (Object.values(errors).some(Boolean)) {
+        return json<ActionData>({ errors, fields }, { status: 400 });
+      }
+
+      const message = await updateMessage(messageId, text);
 
       return json<ActionData>({ message });
     }

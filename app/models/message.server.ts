@@ -45,6 +45,16 @@ export function createMessage({
   return prisma.message.create(messageToCreate);
 }
 
+export function updateMessage(id: Message["id"], text: Message["text"]) {
+  const data: Prisma.MessageUpdateInput = {
+    text,
+  };
+  return prisma.message.update({
+    where: { id },
+    data,
+  });
+}
+
 export function getMessage({ id }: Pick<Message, "id">) {
   return prisma.message.findFirst({
     where: { id },
