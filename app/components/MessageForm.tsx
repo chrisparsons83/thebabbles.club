@@ -2,14 +2,21 @@ import type { Message, Post } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import { useSocket } from "~/context";
+import type { MessageWithUser } from "~/models/message.server";
 
 type Props = {
   id: Post["id"];
   parentId?: Message["parentId"];
   toggleForm?: () => void;
+  existingMessage?: MessageWithUser;
 };
 
-export default function MessageForm({ id, parentId, toggleForm }: Props) {
+export default function MessageForm({
+  id,
+  parentId,
+  toggleForm,
+  existingMessage,
+}: Props) {
   const fetcher = useFetcher();
   const isAdding = fetcher.state === "submitting";
   const formRef = useRef<HTMLFormElement>(null);
@@ -23,7 +30,11 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
     }
 
     if (fetcher.state === "loading" && lastState !== "submitting" && socket) {
-      socket.emit("messagePosted", fetcher.data.message);
+      console.log(fetcher.data);
+      if (fetcher.data.message)
+        socket.emit("messagePosted", fetcher.data.message);
+      if (fetcher.data.editedMessage)
+        socket.emit("messageEdited", fetcher.data.editedMessage);
       formRef.current?.reset();
     }
 
@@ -44,17 +55,23 @@ export default function MessageForm({ id, parentId, toggleForm }: Props) {
             placeholder="Add a comment"
             className="textarea textarea-bordered mt-1"
             ref={textareaRef}
+            defaultValue={existingMessage?.text}
           />
         </label>
       </div>
       <input type="hidden" value={id} name="postId" />
       <input type="hidden" value={parentId ?? undefined} name="parentId" />
+      <input
+        type="hidden"
+        value={existingMessage?.id ?? undefined}
+        name="existingMessageId"
+      />
       <button
         className="btn btn-primary mt-4 rounded"
         type="submit"
         disabled={isAdding}
         name="_action"
-        value="createMessage"
+        value={existingMessage ? "updateMessage" : "createMessage"}
       >
         {isAdding ? "Posting..." : "Post"}
       </button>

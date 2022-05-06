@@ -3,14 +3,12 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
-import Autolinker from "autolinker";
-import DOMPurify from "isomorphic-dompurify";
-import snarkdown from "snarkdown";
 import invariant from "tiny-invariant";
 
 import { requireActiveUser } from "~/session.server";
 import type { PostWithMessages } from "~/models/post.server";
 import type { Message, MessageWithUser } from "~/models/message.server";
+import { updateMessage } from "~/models/message.server";
 import { createMessage } from "~/models/message.server";
 import { getPost } from "~/models/post.server";
 import MessageComponent from "~/components/Message";
@@ -43,6 +41,7 @@ type ActionData = {
   message?: Message;
   like?: Like;
   unlike?: Like;
+  editedMessage?: Message;
 };
 
 function validateText(text: string) {
@@ -100,18 +99,39 @@ export const action: ActionFunction = async ({ request }) => {
         return json<ActionData>({ errors, fields }, { status: 400 });
       }
 
-      const processedText = snarkdown(
-        Autolinker.link(DOMPurify.sanitize(text))
-      );
-
       const message = await createMessage({
         userId,
-        text: processedText,
+        text,
         postId,
         parentId,
       });
 
       return json<ActionData>({ message });
+    }
+    case "updateMessage": {
+      const text = formData.get("text");
+      const messageId = formData.get("existingMessageId");
+
+      if (typeof text !== "string" || typeof messageId !== "string") {
+        return json<ActionData>(
+          { formError: "Form was not submitted correctly." },
+          { status: 400 }
+        );
+      }
+
+      const errors = {
+        text: validateText(text),
+      };
+
+      const fields = { text, messageId };
+
+      if (Object.values(errors).some(Boolean)) {
+        return json<ActionData>({ errors, fields }, { status: 400 });
+      }
+
+      const message = await updateMessage(messageId, text);
+
+      return json<ActionData>({ editedMessage: message });
     }
     case "like": {
       const emoji = formData.get("emoji");
@@ -196,6 +216,20 @@ export default function PostPage() {
         return;
 
       setListOfMessages((messages) => [newMessage, ...messages]);
+    });
+
+    socket.on("messageEdited", (editedMessage: MessageWithUser) => {
+      if (!editedMessage) return;
+      console.log({ editedMessage });
+
+      const message = listOfMessages.find((message) => {
+        return message && message.id === editedMessage.id;
+      });
+
+      if (!message) return;
+
+      message.text = editedMessage.text;
+      setListOfMessages((messages) => [...messages]);
     });
 
     socket.on("likePosted", (newLike: LikeWithUser) => {
