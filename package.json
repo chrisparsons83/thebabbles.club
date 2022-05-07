@@ -40,7 +40,6 @@
     "@remix-run/express": "^1.4.1",
     "@remix-run/node": "^1.4.1",
     "@remix-run/react": "^1.4.1",
-    "autolinker": "^3.15.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.29.1",
     "clsx": "^1.1.1",
