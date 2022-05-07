@@ -17,6 +17,11 @@ import { useSocket } from "~/context";
 import type { Like, LikeWithUser } from "~/models/like.server";
 import { deleteLike, findLikeByUserAndMessage } from "~/models/like.server";
 import { createLike } from "~/models/like.server";
+import { useInterval } from "~/lib/useInterval";
+
+const INITIAL_SYNC_TIMER = 60000;
+const SECOND_SYNC_TIMER = 10000;
+const THIRD_SYNC_TIMER = 5000;
 
 type LoaderData = {
   post: PostWithMessages;
@@ -202,6 +207,7 @@ export default function PostPage() {
   const [listOfMessages, setListOfMessages] =
     useState<MessageWithUser[]>(data.post!.messages) ||
     ([] as MessageWithUser[]);
+  const [syncTimer, setSyncTimer] = useState<number | null>(INITIAL_SYNC_TIMER);
 
   useEffect(() => {
     if (!socket) return;
@@ -224,7 +230,6 @@ export default function PostPage() {
 
     socket.on("messageEdited", (editedMessage: MessageWithUser) => {
       if (!editedMessage) return;
-      console.log({ editedMessage });
 
       const message = listOfMessages.find((message) => {
         return message && message.id === editedMessage.id;
@@ -264,17 +269,34 @@ export default function PostPage() {
       setListOfMessages((messages) => [...messages]);
     });
 
+    socket.on("outOfSync", () => {
+      if (syncTimer === INITIAL_SYNC_TIMER) {
+        setSyncTimer(SECOND_SYNC_TIMER);
+      } else if (syncTimer === SECOND_SYNC_TIMER) {
+        setSyncTimer(THIRD_SYNC_TIMER);
+      } else {
+        setSyncTimer(null);
+      }
+    });
+
     return () => {
       socket.removeAllListeners();
       socket.emit("leavePage", data.post?.id);
     };
-  }, [socket, data, setListOfMessages, listOfMessages]);
+  }, [socket, data, setListOfMessages, listOfMessages, syncTimer]);
 
   useEffect(() => {
     if (!data.post) return;
 
     setListOfMessages(() => data.post?.messages!);
   }, [data, setListOfMessages]);
+
+  useInterval(() => {
+    if (!data.post || !socket) return;
+
+    const numberOfMessagesInList = listOfMessages.length;
+    socket.emit("ping", { postId: data.post.id, numberOfMessagesInList });
+  }, syncTimer);
 
   if (!data.post) {
     return null;
@@ -288,6 +310,24 @@ export default function PostPage() {
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
       <MessageForm id={data.post.id} />
+      {!syncTimer && (
+        <div className="alert alert-error mt-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 flex-shrink-0 stroke-current"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span>You have lost your connection. Please refresh the page.</span>
+        </div>
+      )}
       <div className="pt-8">
         {messageDisplay
           .filter((message) => message && !message.parentId)

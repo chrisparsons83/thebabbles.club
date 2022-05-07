@@ -46,10 +46,6 @@ export const action: ActionFunction = async ({ request }) => {
     typeof password !== "string" ||
     typeof confirmPassword !== "string"
   ) {
-    console.log(`typeof id: ${typeof id}`);
-    console.log(`typeof password: ${typeof password}`);
-    console.log(`typeof confirmPassword: ${typeof confirmPassword}`);
-    console.log(`typeof avatar: ${typeof avatar}`);
     return json<ActionData>({ error: "Form was not submitted correctly." });
   }
 

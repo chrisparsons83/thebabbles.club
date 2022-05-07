@@ -33,6 +33,16 @@ io.on("connection", (socket) => {
     socket.leave(postId);
   });
 
+  socket.on("ping", async ({ numberOfMessagesInList, postId }) => {
+    const numberOfActualMessages = await prisma.message.count({
+      where: {
+        postId,
+      },
+    });
+    if (numberOfActualMessages !== numberOfMessagesInList)
+      socket.emit("outOfSync", true);
+  });
+
   socket.on("messagePosted", async (message: Message) => {
     if (!message) return;
 
