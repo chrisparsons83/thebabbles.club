@@ -210,6 +210,10 @@ export default function PostPage() {
       socket.emit("joinPage", data.post.id);
     }
 
+    socket.io.on("reconnect", () => {
+      if (data.post) socket.emit("joinPage", data.post.id);
+    });
+
     socket.on("messagePosted", (newMessage: MessageWithUser) => {
       if (!newMessage) return;
       if (listOfMessages.some((message) => message?.id === newMessage.id))
