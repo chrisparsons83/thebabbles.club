@@ -46,6 +46,15 @@ export default function MessageForm({
     textareaRef.current?.focus();
   }, []);
 
+  const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (!existingMessage) {
+      formRef.current?.reset();
+    } else {
+      if (toggleForm) toggleForm();
+    }
+  };
+
   return (
     <fetcher.Form method="post" ref={formRef} className="mt-2">
       <div>
@@ -67,15 +76,20 @@ export default function MessageForm({
         value={existingMessage?.id ?? undefined}
         name="existingMessageId"
       />
-      <button
-        className="btn btn-primary mt-4 rounded"
-        type="submit"
-        disabled={isAdding}
-        name="_action"
-        value={existingMessage ? "updateMessage" : "createMessage"}
-      >
-        {isAdding ? "Posting..." : "Post"}
-      </button>
+      <div className="flex gap-0.5">
+        <button
+          className="btn btn-primary mt-4 rounded"
+          type="submit"
+          disabled={isAdding}
+          name="_action"
+          value={existingMessage ? "updateMessage" : "createMessage"}
+        >
+          {isAdding ? "Posting..." : "Post"}
+        </button>
+        <button className="btn btn-primary mt-4 rounded" onClick={handleCancel}>
+          {existingMessage ? "Cancel" : "Reset"}
+        </button>
+      </div>
     </fetcher.Form>
   );
 }
