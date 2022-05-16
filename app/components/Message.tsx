@@ -93,7 +93,7 @@ export default function MessageComponent({
           </div>
         </div>
         <div>
-          <div className="break-words">{parse(formattedMessage)}</div>
+          <div className="my-6 break-words">{parse(formattedMessage)}</div>
           <div className="">
             {imagesToDisplay.map((image) => (
               <ImagePreview image={image} key={image} />

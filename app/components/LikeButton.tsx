@@ -59,6 +59,7 @@ export default function LikeButton({ message, emoji }: Props) {
           className={clsx(
             "btn",
             "btn-sm",
+            "btn-circle",
             userLikedThisLike ? "btn-secondary-focus" : "btn-secondary"
           )}
           name="_action"

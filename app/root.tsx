@@ -32,7 +32,13 @@ import Drawer from "./components/Drawer";
 TimeAgo.addLocale(en);
 
 export const links: LinksFunction = () => {
-  return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
+  return [
+    { rel: "stylesheet", href: tailwindStylesheetUrl },
+    {
+      rel: "stylesheet",
+      href: "https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap",
+    },
+  ];
 };
 
 export const meta: MetaFunction = () => ({
@@ -76,7 +82,7 @@ export function App() {
   }, [socket]);
 
   return (
-    <html lang="en" className="h-full" data-theme="business">
+    <html lang="en" className="h-full" data-theme="thebabbles">
       <head>
         <Meta />
         <Links />
