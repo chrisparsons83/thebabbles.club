@@ -22,6 +22,7 @@ module.exports = {
     require("@tailwindcss/typography"),
   ],
   daisyui: {
+    darkTheme: "thebabblesdark",
     themes: [
       "corporate",
       "pastel",
