@@ -17,7 +17,7 @@ type Props = {
 };
 
 const getImagesFromString = (text: string, numberToShow: number = 1) => {
-  const regex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|gifv|webm))"/gi;
+  const regex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|gifv|webm|webp))"/gi;
   const matches = text.match(regex);
   if (!matches) return [];
   return [
