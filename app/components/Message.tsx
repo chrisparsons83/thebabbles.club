@@ -108,7 +108,7 @@ export default function MessageComponent({
             ))}
           </div>
           <div className="mt-4 flex gap-0.5">
-            {depth < 4 && (
+            {depth < 8 && (
               <button
                 onClick={toggleForm}
                 className="btn btn-secondary btn-sm flex-none"
