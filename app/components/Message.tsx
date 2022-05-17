@@ -72,8 +72,16 @@ export default function MessageComponent({
     message.user?.avatar || "https://via.placeholder.com/50";
 
   return (
-    <div className="pt-4">
-      <div className="border-b border-slate-700 pb-4 pl-4">
+    <div
+      className={clsx(
+        borderTheme,
+        "border-l-4",
+        "lg:border-l-8",
+        "pt-4",
+        "mb-8"
+      )}
+    >
+      <div className="border-b border-secondary px-4 pb-4">
         <div className="mb-3 flex">
           <div className="not-prose avatar flex-none">
             <div className="not-prose mr-2 w-6 rounded">
@@ -103,7 +111,7 @@ export default function MessageComponent({
             {depth < 4 && (
               <button
                 onClick={toggleForm}
-                className="btn btn-primary btn-sm flex-none"
+                className="btn btn-secondary btn-sm flex-none"
                 disabled={showEditForm}
               >
                 Reply
@@ -112,7 +120,7 @@ export default function MessageComponent({
             {isWrittenByCurrentUser && (
               <button
                 onClick={toggleEditForm}
-                className="btn btn-primary btn-sm flex-none"
+                className="btn btn-secondary btn-sm flex-none"
                 disabled={showMessageForm && !showEditForm}
               >
                 Edit
@@ -135,10 +143,7 @@ export default function MessageComponent({
       {childMessages &&
         childMessages.length > 0 &&
         childMessages.map((message) => (
-          <div
-            className={clsx(borderTheme, "border-l-8", "bg-neutral", "pl-1")}
-            key={message!.id}
-          >
+          <div className={clsx("bg-primary", "pl-1")} key={message!.id}>
             <MessageComponent
               message={message}
               depth={depth + 1}

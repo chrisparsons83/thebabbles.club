@@ -78,7 +78,7 @@ export default function MessageForm({
       />
       <div className="flex gap-0.5">
         <button
-          className="btn btn-primary mt-4 rounded"
+          className="btn btn-secondary mt-4 rounded"
           type="submit"
           disabled={isAdding}
           name="_action"
@@ -86,7 +86,10 @@ export default function MessageForm({
         >
           {isAdding ? "Posting..." : "Post"}
         </button>
-        <button className="btn btn-primary mt-4 rounded" onClick={handleCancel}>
+        <button
+          className="btn btn-secondary mt-4 rounded"
+          onClick={handleCancel}
+        >
           {existingMessage ? "Cancel" : "Reset"}
         </button>
       </div>

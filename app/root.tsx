@@ -82,7 +82,7 @@ export function App() {
   }, [socket]);
 
   return (
-    <html lang="en" className="h-full" data-theme="thebabbles">
+    <html lang="en" className="h-full" data-theme="thebabblesdark">
       <head>
         <Meta />
         <Links />

@@ -24,13 +24,15 @@ module.exports = {
   daisyui: {
     themes: [
       "corporate",
+      "pastel",
+      "garden",
       {
-        thebabbles: {
-          primary: "#0761d1",
-          secondary: "#2f71e8",
-          accent: "#d1342f",
-          neutral: "#1a181a",
-          "base-100": "#0a0a0a",
+        thebabblesdark: {
+          primary: "#131f2e",
+          secondary: "#2b333f",
+          accent: "#ff7486",
+          neutral: "#000509",
+          "base-100": "#001221",
           info: "#0092D6",
           success: "#6CB288",
           warning: "#DAAD58",
