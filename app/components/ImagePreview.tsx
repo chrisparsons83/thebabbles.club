@@ -56,7 +56,7 @@ export default function ImagePreview({ image }: Props) {
 
   return (
     <div>
-      <img src={image} alt="preview" className="my-0 max-w-full" />
+      <img src={image} alt="preview" className="my-0 max-w-full lg:max-w-lg" />
       <button onClick={toggle} className="btn btn-secondary btn-xs">
         Hide Preview
       </button>
