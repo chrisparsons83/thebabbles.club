@@ -308,6 +308,11 @@ export default function PostPage() {
   return (
     <div>
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
+      <aside className="text-sm">
+        Created on {new Date(data.post.createdAt).toLocaleDateString()}
+        {" ∙ "}
+        {messageDisplay.length} messages
+      </aside>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
       <MessageForm id={data.post.id} />
       {!syncTimer && (
