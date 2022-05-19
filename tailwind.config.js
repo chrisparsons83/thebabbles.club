@@ -41,7 +41,7 @@ module.exports = {
       },
       {
         thebabbleslight: {
-          primary: "#dbeafe",
+          primary: "#ddecfd",
           secondary: "#00205B",
           accent: "#fcc7dd",
           neutral: "#201B22",

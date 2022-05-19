@@ -26,11 +26,15 @@ const getImagesFromString = (text: string, numberToShow: number = 1) => {
 };
 
 const depthTheming = [
-  "border-gray-200",
-  "border-gray-300",
-  "border-gray-400",
-  "border-gray-500",
-  "border-gray-600",
+  ["border-gray-900", "dark:border-gray-100"],
+  ["border-gray-800", "dark:border-gray-200"],
+  ["border-gray-700", "dark:border-gray-300"],
+  ["border-gray-600", "dark:border-gray-400"],
+  ["border-gray-500", "dark:border-gray-500"],
+  ["border-gray-400", "dark:border-gray-600"],
+  ["border-gray-300", "dark:border-gray-700"],
+  ["border-gray-200", "dark:border-gray-800"],
+  ["border-gray-100", "dark:border-gray-900"],
 ];
 
 export default function MessageComponent({
