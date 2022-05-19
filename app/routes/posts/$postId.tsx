@@ -316,7 +316,7 @@ export default function PostPage() {
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
       <MessageForm id={data.post.id} />
       {!syncTimer && (
-        <div className="alert alert-error mt-4">
+        <div className="alert alert-error mt-4 justify-start">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6 flex-shrink-0 stroke-current"
