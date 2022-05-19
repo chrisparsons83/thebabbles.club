@@ -27,7 +27,15 @@ import DominosModal from "./components/DominosModal";
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en.json";
 import { BabblesProvider, useBabblesContext } from "./babblesContext";
+import {
+  NonFlashOfWrongThemeEls,
+  Theme,
+  ThemeProvider,
+  useTheme,
+} from "./themeContext";
 import Drawer from "./components/Drawer";
+import clsx from "clsx";
+import { getThemeSession } from "./theme.server";
 
 TimeAgo.addLocale(en);
 
@@ -49,18 +57,25 @@ export const meta: MetaFunction = () => ({
 
 type LoaderData = {
   user: User | null;
+  theme: Theme | null;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  return json<LoaderData>({
+  const themeSession = await getThemeSession(request);
+
+  const data: LoaderData = {
+    theme: themeSession.getTheme(),
     user: await getUser(request),
-  });
+  };
+
+  return data;
 };
 
 export function App() {
-  const { user } = useLoaderData<LoaderData>();
+  const data = useLoaderData<LoaderData>();
   const [socket, setSocket] = useState<Socket>();
   const { setUser } = useBabblesContext();
+  const [theme] = useTheme();
 
   useEffect(() => {
     const socket = io();
@@ -71,8 +86,8 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    setUser(user);
-  }, [user, setUser]);
+    setUser(data.user);
+  }, [data.user, setUser]);
 
   useEffect(() => {
     if (!socket) return;
@@ -82,15 +97,20 @@ export function App() {
   }, [socket]);
 
   return (
-    <html lang="en" className="h-full" data-theme="thebabblesdark">
+    <html
+      lang="en"
+      data-theme={theme === Theme.DARK ? "thebabblesdark" : "thebabbleslight"}
+      className={clsx("h-full", theme)}
+    >
       <head>
         <Meta />
         <Links />
+        <NonFlashOfWrongThemeEls ssrTheme={Boolean(data.theme)} />
       </head>
       <body className="h-full">
-        <Drawer user={user}>
+        <Drawer user={data.user}>
           <SocketProvider socket={socket}>
-            <Navbar user={user} />
+            <Navbar user={data.user} />
             <div className="prose px-4 md:container md:mx-auto">
               <Outlet />
             </div>
@@ -106,9 +126,13 @@ export function App() {
 }
 
 export default function AppWithProvider() {
+  const data = useLoaderData<LoaderData>();
+
   return (
     <BabblesProvider>
-      <App />
+      <ThemeProvider specifiedTheme={data.theme}>
+        <App />
+      </ThemeProvider>
     </BabblesProvider>
   );
 }

@@ -2,6 +2,7 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
   content: ["./app/**/*.{ts,tsx,jsx,js}"],
+  darkMode: "class",
   theme: {
     container: {
       screens: {
@@ -23,10 +24,8 @@ module.exports = {
   ],
   daisyui: {
     darkTheme: "thebabblesdark",
+    lightTheme: "thebabbleslight",
     themes: [
-      "corporate",
-      "pastel",
-      "garden",
       {
         thebabblesdark: {
           primary: "#131f2e",
@@ -38,6 +37,19 @@ module.exports = {
           success: "#6CB288",
           warning: "#DAAD58",
           error: "#AB3D30",
+        },
+      },
+      {
+        thebabbleslight: {
+          primary: "#dbeafe",
+          secondary: "#00205B",
+          accent: "#fcc7dd",
+          neutral: "#201B22",
+          "base-100": "#FAFAFA",
+          info: "#87D4ED",
+          success: "#1A7F53",
+          warning: "#D28304",
+          error: "#E4391B",
         },
       },
     ],

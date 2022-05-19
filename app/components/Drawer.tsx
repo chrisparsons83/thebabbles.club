@@ -1,6 +1,7 @@
 import { Form, Link } from "@remix-run/react";
 import React, { useRef } from "react";
 import type { User } from "~/models/user.server";
+import ToggleTheme from "./ToggleTheme";
 
 type Props = {
   user: User | null;
@@ -29,6 +30,9 @@ export default function Drawer({ user, children }: Props) {
       <div className="drawer-side">
         <label htmlFor="my-drawer" className="drawer-overlay"></label>
         <ul className="menu w-80 overflow-y-auto bg-base-100 p-4 text-base-content">
+          <li>
+            <ToggleTheme />
+          </li>
           <li>
             <Link to="/" onClick={toggleDrawer}>
               Home
