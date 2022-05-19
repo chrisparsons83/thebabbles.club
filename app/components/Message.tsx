@@ -82,7 +82,7 @@ export default function MessageComponent({
         "border-l-4",
         "lg:border-l-8",
         "pt-4",
-        depth === 0 ? ["mb-8", "border-b"] : ""
+        depth === 0 ? ["mb-8"] : ""
       )}
     >
       <div className="border-b border-secondary px-4 pb-4">
