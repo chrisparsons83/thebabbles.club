@@ -44,7 +44,12 @@ export default function MessageComponent({
 }: Props) {
   const [showMessageForm, setShowMessageForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [hasBeenViewed, setHasBeenViewed] = useState(false);
   const { user } = useBabblesContext();
+
+  const handleMouseover = () => {
+    setHasBeenViewed(true);
+  };
 
   const toggleForm = () => {
     setShowMessageForm((prevState) => !prevState);
@@ -82,8 +87,11 @@ export default function MessageComponent({
         "border-l-4",
         "lg:border-l-8",
         "pt-4",
-        depth === 0 ? ["mb-8"] : ""
+        depth === 0 ? ["mb-8"] : "",
+        !hasBeenViewed ? "bg-primary" : "",
+        "duration-500"
       )}
+      onMouseOver={handleMouseover}
     >
       <div className="border-b border-secondary px-4 pb-4">
         <div className="mb-3 flex">
@@ -147,7 +155,7 @@ export default function MessageComponent({
       {childMessages &&
         childMessages.length > 0 &&
         childMessages.map((message) => (
-          <div className={clsx("bg-primary", "pl-1")} key={message!.id}>
+          <div className={clsx("pl-1")} key={message!.id}>
             <MessageComponent
               message={message}
               depth={depth + 1}

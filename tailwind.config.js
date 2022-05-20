@@ -41,11 +41,11 @@ module.exports = {
       },
       {
         thebabbleslight: {
-          primary: "#ddecfd",
+          primary: "#c7e1ff",
           secondary: "#00205B",
           accent: "#fcc7dd",
           neutral: "#201B22",
-          "base-100": "#FAFAFA",
+          "base-100": "#EEEEEE",
           info: "#87D4ED",
           success: "#1A7F53",
           warning: "#D28304",
