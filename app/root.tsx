@@ -45,6 +45,32 @@ export const links: LinksFunction = () => {
       rel: "stylesheet",
       href: "https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap",
     },
+    {
+      rel: "apple-touch-icon",
+      href: "/apple-touch-icon.png",
+      sizes: "180x180",
+    },
+    {
+      rel: "icon",
+      href: "/favicon-32x32.png",
+      type: "image/png",
+      sizes: "32x32",
+    },
+    {
+      rel: "icon",
+      href: "/favicon-16x16.png",
+      type: "image/png",
+      sizes: "16x16",
+    },
+    {
+      rel: "manifest",
+      href: "/site.webmanifest",
+    },
+    {
+      rel: "mask-icon",
+      href: "/safari-pinned-tab.svg",
+      color: "#001221",
+    },
   ];
 };
 
@@ -52,6 +78,8 @@ export const meta: MetaFunction = () => ({
   charset: "utf-8",
   title: "The Babbles",
   viewport: "width=device-width,initial-scale=1",
+  "msapplication-TileColor": "#2b5797",
+  "theme-color": "#001221",
 });
 
 type LoaderData = {
