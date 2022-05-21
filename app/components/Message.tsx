@@ -14,6 +14,7 @@ type Props = {
   message: MessageWithUser;
   depth: number;
   allMessages?: MessageWithUser[];
+  pageLoadTime: Date;
 };
 
 const getImagesFromString = (text: string, numberToShow: number = 1) => {
@@ -41,14 +42,17 @@ export default function MessageComponent({
   message,
   depth,
   allMessages,
+  pageLoadTime,
 }: Props) {
   const [showMessageForm, setShowMessageForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [hasBeenViewed, setHasBeenViewed] = useState(false);
+  const [hasNotBeenViewed, setHasNotBeenViewed] = useState(
+    message && new Date(message.createdAt) > pageLoadTime
+  );
   const { user } = useBabblesContext();
 
   const handleMouseover = () => {
-    setHasBeenViewed(true);
+    setHasNotBeenViewed(false);
   };
 
   const toggleForm = () => {
@@ -88,7 +92,7 @@ export default function MessageComponent({
         "lg:border-l-8",
         "pt-4",
         depth === 0 ? ["mb-8"] : "",
-        !hasBeenViewed ? "bg-primary" : "",
+        hasNotBeenViewed ? "bg-primary" : "",
         "duration-500"
       )}
       onMouseOver={handleMouseover}
@@ -160,6 +164,7 @@ export default function MessageComponent({
               message={message}
               depth={depth + 1}
               allMessages={allMessages}
+              pageLoadTime={pageLoadTime}
             />
           </div>
         ))}

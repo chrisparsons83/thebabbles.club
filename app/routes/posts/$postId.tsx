@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
@@ -208,6 +208,7 @@ export default function PostPage() {
     useState<MessageWithUser[]>(data.post!.messages) ||
     ([] as MessageWithUser[]);
   const [syncTimer, setSyncTimer] = useState<number | null>(INITIAL_SYNC_TIMER);
+  const pageLoadTime = useRef(new Date());
 
   useEffect(() => {
     if (!socket) return;
@@ -344,6 +345,7 @@ export default function PostPage() {
                   depth={0}
                   allMessages={messageDisplay}
                   key={message.id}
+                  pageLoadTime={pageLoadTime.current}
                 />
               )
             );
