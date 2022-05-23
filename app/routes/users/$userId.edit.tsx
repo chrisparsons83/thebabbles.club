@@ -58,7 +58,10 @@ export const action: ActionFunction = async ({ request }) => {
     fieldsToUpdate.email = email;
   }
   if (typeof avatar === "string") {
-    fieldsToUpdate.avatar = avatar;
+    fieldsToUpdate.avatar = avatar.replace(
+      "image/upload",
+      "image/upload/c_fill,h_64,w_64,q_auto:best"
+    );
   }
   if (password && password.length > 0) {
     fieldsToUpdate.password = password;
