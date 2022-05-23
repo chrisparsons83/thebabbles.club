@@ -25,6 +25,7 @@ const THIRD_SYNC_TIMER = 5000;
 
 type LoaderData = {
   post: PostWithMessages;
+  cloudinaryCloudName?: string;
 };
 
 type ActionData = {
@@ -198,7 +199,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   if (!post) {
     throw new Response("Not Found", { status: 404 });
   }
-  return json<LoaderData>({ post });
+  return json<LoaderData>({
+    post,
+    cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
+  });
 };
 
 export default function PostPage() {
@@ -346,6 +350,7 @@ export default function PostPage() {
                   allMessages={messageDisplay}
                   key={message.id}
                   pageLoadTime={pageLoadTime.current}
+                  cloudName={data.cloudinaryCloudName}
                 />
               )
             );
