@@ -11,7 +11,7 @@ import LikeButton from "./LikeButton";
 import MessageForm from "./MessageForm";
 
 type Props = {
-  message: MessageWithUser;
+  message: NonNullable<MessageWithUser>;
   depth: number;
   allMessages?: MessageWithUser[];
   pageLoadTime: Date;
@@ -44,11 +44,11 @@ export default function MessageComponent({
   allMessages,
   pageLoadTime,
 }: Props) {
+  const newerThanInitialLoad = new Date(message.createdAt) > pageLoadTime;
   const [showMessageForm, setShowMessageForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [hasNotBeenViewed, setHasNotBeenViewed] = useState(
-    message && new Date(message.createdAt) > pageLoadTime
-  );
+  const [hasNotBeenViewed, setHasNotBeenViewed] =
+    useState(newerThanInitialLoad);
   const { user } = useBabblesContext();
 
   const handleMouseover = () => {
@@ -74,7 +74,7 @@ export default function MessageComponent({
     .reverse()
     .slice();
 
-  if (!message || !user) return null;
+  if (!user) return null;
 
   const isWrittenByCurrentUser = message.userId === user?.id;
   const messageDate = new Date(message.createdAt);
@@ -120,7 +120,11 @@ export default function MessageComponent({
           <div className="my-6 break-words">{parse(formattedMessage)}</div>
           <div className="">
             {imagesToDisplay.map((image) => (
-              <ImagePreview image={image} key={image} />
+              <ImagePreview
+                image={image}
+                key={image}
+                showOnInitialLoad={newerThanInitialLoad}
+              />
             ))}
           </div>
           <div className="mt-4 flex gap-0.5">
@@ -158,16 +162,19 @@ export default function MessageComponent({
       </div>
       {childMessages &&
         childMessages.length > 0 &&
-        childMessages.map((message) => (
-          <div className={clsx("pl-1")} key={message!.id}>
-            <MessageComponent
-              message={message}
-              depth={depth + 1}
-              allMessages={allMessages}
-              pageLoadTime={pageLoadTime}
-            />
-          </div>
-        ))}
+        childMessages.map(
+          (message) =>
+            message && (
+              <div className={clsx("pl-1")} key={message!.id}>
+                <MessageComponent
+                  message={message}
+                  depth={depth + 1}
+                  allMessages={allMessages}
+                  pageLoadTime={pageLoadTime}
+                />
+              </div>
+            )
+        )}
     </div>
   );
 }

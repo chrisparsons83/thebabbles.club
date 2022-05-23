@@ -2,10 +2,11 @@ import { useState } from "react";
 
 type Props = {
   image: string;
+  showOnInitialLoad: boolean;
 };
 
-export default function ImagePreview({ image }: Props) {
-  const [show, setShow] = useState(true);
+export default function ImagePreview({ image, showOnInitialLoad }: Props) {
+  const [show, setShow] = useState(showOnInitialLoad);
 
   const toggle = () => {
     setShow((prevState) => !prevState);
