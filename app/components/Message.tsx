@@ -4,6 +4,7 @@ import { useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 import { useBabblesContext } from "~/babblesContext";
 import { getFormattedMessageText } from "~/lib/format";
+import { Image, Transformation } from "cloudinary-react";
 
 import type { MessageWithUser } from "~/models/message.server";
 import ImagePreview from "./ImagePreview";
@@ -15,7 +16,15 @@ type Props = {
   depth: number;
   allMessages?: MessageWithUser[];
   pageLoadTime: Date;
+  cloudName?: string;
 };
+
+function getAvatarCloudinaryId(url: string | null) {
+  if (!url) return null;
+
+  const urlParts = url.split("/");
+  return urlParts.slice(-2).join("/");
+}
 
 const getImagesFromString = (text: string, numberToShow: number = 1) => {
   const regex = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|gifv|webm|webp))"/gi;
@@ -43,6 +52,7 @@ export default function MessageComponent({
   depth,
   allMessages,
   pageLoadTime,
+  cloudName,
 }: Props) {
   const newerThanInitialLoad = new Date(message.createdAt) > pageLoadTime;
   const [showMessageForm, setShowMessageForm] = useState(false);
@@ -82,7 +92,8 @@ export default function MessageComponent({
   const imagesToDisplay = getImagesFromString(formattedMessage);
   const borderTheme = depthTheming[depth];
   const avatarToDisplay =
-    message.user?.avatar || "https://via.placeholder.com/50";
+    message.user.avatar || "https://via.placeholder.com/32";
+  const cloudinaryAvatarId = getAvatarCloudinaryId(message.user.avatar);
 
   return (
     <div
@@ -99,9 +110,21 @@ export default function MessageComponent({
     >
       <div className="border-b border-secondary px-4 pb-4">
         <div className="mb-3 flex">
-          <div className="not-prose avatar flex-none">
-            <div className="not-prose mr-2 w-6 rounded">
-              <img src={avatarToDisplay} alt="" />
+          <div className="not-prose avatar mr-2 flex-none">
+            <div className="not-prose w-8 rounded">
+              {cloudinaryAvatarId && cloudName ? (
+                <Image cloudName={cloudName} publicId={cloudinaryAvatarId}>
+                  <Transformation
+                    effect="improve"
+                    height="64"
+                    quality="auto:best"
+                    width="64"
+                    crop="thumb"
+                  />
+                </Image>
+              ) : (
+                <img src={avatarToDisplay} alt="" />
+              )}
             </div>
           </div>
           <div className="flex-none">
