@@ -12,11 +12,11 @@ interface VideoProps extends JSX.IntrinsicElements.video {
 }
 
 interface TransformationProps {
-  crop: string;
-  effect: string;
-  height: string;
-  quality: string;
-  width: string;
+  crop?: string;
+  effect?: string;
+  height?: string;
+  quality?: string;
+  width?: string;
 }
 
 declare module "cloudinary-react" {

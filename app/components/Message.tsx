@@ -115,11 +115,10 @@ export default function MessageComponent({
               {cloudinaryAvatarId && cloudName ? (
                 <Image cloudName={cloudName} publicId={cloudinaryAvatarId}>
                   <Transformation
-                    effect="improve"
                     height="64"
                     quality="auto:best"
                     width="64"
-                    crop="thumb"
+                    crop="fill"
                   />
                 </Image>
               ) : (
