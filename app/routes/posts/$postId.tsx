@@ -212,7 +212,11 @@ export default function PostPage() {
     useState<MessageWithUser[]>(data.post!.messages) ||
     ([] as MessageWithUser[]);
   const [syncTimer, setSyncTimer] = useState<number | null>(INITIAL_SYNC_TIMER);
-  const pageLoadTime = useRef(new Date());
+  const [pageLoadTime, setPageLoadTime] = useState(new Date());
+
+  const handleClearMessages = () => {
+    setPageLoadTime(() => new Date());
+  };
 
   useEffect(() => {
     if (!socket) return;
@@ -317,6 +321,12 @@ export default function PostPage() {
         Created on {new Date(data.post.createdAt).toLocaleDateString()}
         {" ∙ "}
         {messageDisplay.length} messages
+        <button
+          className="btn btn-primary btn-xs ml-2"
+          onClick={handleClearMessages}
+        >
+          Mark all as read
+        </button>
       </aside>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
       <MessageForm id={data.post.id} />
@@ -349,7 +359,7 @@ export default function PostPage() {
                   depth={0}
                   allMessages={messageDisplay}
                   key={message.id}
-                  pageLoadTime={pageLoadTime.current}
+                  pageLoadTime={pageLoadTime}
                   cloudName={data.cloudinaryCloudName}
                 />
               )

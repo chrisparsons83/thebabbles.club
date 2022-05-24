@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import parse from "html-react-parser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 import { useBabblesContext } from "~/babblesContext";
 import { getFormattedMessageText } from "~/lib/format";
@@ -60,6 +60,10 @@ export default function MessageComponent({
   const [hasNotBeenViewed, setHasNotBeenViewed] =
     useState(newerThanInitialLoad);
   const { user } = useBabblesContext();
+
+  useEffect(() => {
+    setHasNotBeenViewed(newerThanInitialLoad);
+  }, [newerThanInitialLoad]);
 
   const handleMouseover = () => {
     setHasNotBeenViewed(false);
