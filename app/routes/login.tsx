@@ -163,7 +163,7 @@ export default function LoginPage() {
             <div className="text-center text-sm">
               Don't have an account?{" "}
               <Link
-                className="text-primary underline"
+                className="underline"
                 to={{
                   pathname: "/join",
                   search: searchParams.toString(),

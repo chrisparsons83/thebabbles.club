@@ -126,7 +126,9 @@ export function App() {
   return (
     <html
       lang="en"
-      data-theme={theme === Theme.DARK ? "thebabblesdark" : "thebabbleslight"}
+      data-theme={
+        !theme || theme === Theme.DARK ? "thebabblesdark" : "thebabbleslight"
+      }
       className={clsx("h-full", theme)}
     >
       <head>
