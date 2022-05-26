@@ -16,6 +16,7 @@ const themeStorage = createCookieSessionStorage({
     sameSite: "lax",
     path: "/",
     httpOnly: true,
+    maxAge: 2147483647,
   },
 });
 
