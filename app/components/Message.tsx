@@ -107,7 +107,7 @@ export default function MessageComponent({
         "lg:border-l-8",
         "pt-4",
         depth === 0 ? ["mb-8"] : "",
-        hasNotBeenViewed ? "bg-primary" : "",
+        hasNotBeenViewed ? ["bg-slate-300", "dark:bg-primary"] : "",
         "duration-500"
       )}
       onMouseOver={handleMouseover}
