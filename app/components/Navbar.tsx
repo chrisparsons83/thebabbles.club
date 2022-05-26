@@ -8,8 +8,8 @@ type Props = {
 export default function Navbar({ user }: Props) {
   return (
     <div className="mb-4 bg-primary py-2">
-      <div className="flex px-4 md:container md:mx-auto">
-        <div className="text-bold grow text-2xl">
+      <div className="flex items-center px-4 md:container md:mx-auto">
+        <div className="text-bold grow text-3xl">
           <Link to="/">The Babbles</Link>
         </div>
         <div className="flex-none">
