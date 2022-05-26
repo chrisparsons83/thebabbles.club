@@ -140,7 +140,7 @@ export function App() {
         <Drawer user={data.user}>
           <SocketProvider socket={socket}>
             <Navbar user={data.user} />
-            <div className="prose px-4 dark:prose-invert md:container md:mx-auto">
+            <div className="prose px-4 text-slate-800 dark:prose-invert dark:text-white md:container md:mx-auto">
               <Outlet />
             </div>
             <DominosModal />

@@ -322,7 +322,7 @@ export default function PostPage() {
         {" ∙ "}
         {messageDisplay.length} messages
         <button
-          className="btn btn-primary btn-xs ml-2"
+          className="btn btn-secondary btn-xs ml-2"
           onClick={handleClearMessages}
         >
           Mark all as read
