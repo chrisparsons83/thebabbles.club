@@ -218,6 +218,7 @@ export default function PostPage() {
 
   const handleClearMessages = () => {
     setPageLoadTime(() => new Date());
+    setUnreadMessages([]);
   };
 
   const handleReadMessage = (message: MessageWithUser) => {
