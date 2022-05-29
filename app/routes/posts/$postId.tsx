@@ -330,7 +330,7 @@ export default function PostPage() {
       <aside className="text-sm">
         Created on {new Date(data.post.createdAt).toLocaleDateString()}
         {" ∙ "}
-        {messageDisplay.length} messages ({unreadMessages.length} unread)
+        {messageDisplay.length} messages
         <button
           className="btn btn-secondary btn-xs ml-2"
           onClick={handleClearMessages}
