@@ -4,6 +4,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
 import invariant from "tiny-invariant";
+import Favicon from "react-favicon";
 
 import { requireActiveUser } from "~/session.server";
 import type { PostWithMessages } from "~/models/post.server";
@@ -213,9 +214,16 @@ export default function PostPage() {
     ([] as MessageWithUser[]);
   const [syncTimer, setSyncTimer] = useState<number | null>(INITIAL_SYNC_TIMER);
   const [pageLoadTime, setPageLoadTime] = useState(new Date());
+  const [unreadMessages, setUnreadMessages] = useState<Message[]>([]);
 
   const handleClearMessages = () => {
     setPageLoadTime(() => new Date());
+  };
+
+  const handleReadMessage = (message: MessageWithUser) => {
+    setUnreadMessages((messages) =>
+      messages.filter((m) => message && m.id !== message.id)
+    );
   };
 
   useEffect(() => {
@@ -234,6 +242,7 @@ export default function PostPage() {
       if (listOfMessages.some((message) => message?.id === newMessage.id))
         return;
 
+      setUnreadMessages((messages) => [...messages, newMessage]);
       setListOfMessages((messages) => [newMessage, ...messages]);
     });
 
@@ -316,11 +325,12 @@ export default function PostPage() {
 
   return (
     <div>
+      <Favicon url="/favicon.ico" alertCount={unreadMessages.length} />
       <h1 className="mb-4 text-2xl font-bold">{data.post.title}</h1>
       <aside className="text-sm">
         Created on {new Date(data.post.createdAt).toLocaleDateString()}
         {" ∙ "}
-        {messageDisplay.length} messages
+        {messageDisplay.length} messages ({unreadMessages.length} unread)
         <button
           className="btn btn-secondary btn-xs ml-2"
           onClick={handleClearMessages}
@@ -361,6 +371,7 @@ export default function PostPage() {
                   key={message.id}
                   pageLoadTime={pageLoadTime}
                   cloudName={data.cloudinaryCloudName}
+                  handleReadMessage={handleReadMessage}
                 />
               )
             );

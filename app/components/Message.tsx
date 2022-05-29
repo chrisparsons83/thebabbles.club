@@ -17,6 +17,7 @@ type Props = {
   allMessages?: MessageWithUser[];
   pageLoadTime: Date;
   cloudName?: string;
+  handleReadMessage: (message: MessageWithUser) => void;
 };
 
 function getAvatarCloudinaryId(url: string | null) {
@@ -53,6 +54,7 @@ export default function MessageComponent({
   allMessages,
   pageLoadTime,
   cloudName,
+  handleReadMessage,
 }: Props) {
   const newerThanInitialLoad = new Date(message.createdAt) > pageLoadTime;
   const [showMessageForm, setShowMessageForm] = useState(false);
@@ -66,6 +68,7 @@ export default function MessageComponent({
   }, [newerThanInitialLoad]);
 
   const handleMouseover = () => {
+    handleReadMessage(message);
     setHasNotBeenViewed(false);
   };
 
@@ -197,6 +200,7 @@ export default function MessageComponent({
                   depth={depth + 1}
                   allMessages={allMessages}
                   pageLoadTime={pageLoadTime}
+                  handleReadMessage={handleReadMessage}
                 />
               </div>
             )
