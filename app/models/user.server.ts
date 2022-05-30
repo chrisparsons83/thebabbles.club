@@ -143,7 +143,7 @@ export async function forgotPassword(email: User["email"], website: string) {
     },
   });
 
-  const url = new URL(website);
+  const url = new URL(`${website}/reset-password`);
   url.search = new URLSearchParams({
     user: user.id,
     key: passwordResetHash,

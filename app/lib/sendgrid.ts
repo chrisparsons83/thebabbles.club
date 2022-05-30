@@ -1,4 +1,4 @@
-import * as sg from "@sendgrid/mail";
+import sg = require("@sendgrid/mail");
 
 sg.setApiKey(process.env.SENDGRID_API_KEY || "");
 
