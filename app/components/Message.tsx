@@ -10,6 +10,7 @@ import type { MessageWithUser } from "~/models/message.server";
 import ImagePreview from "./ImagePreview";
 import LikeButton from "./LikeButton";
 import MessageForm from "./MessageForm";
+import TwitterEmbed from "./TwitterEmbed";
 
 type Props = {
   message: NonNullable<MessageWithUser>;
@@ -34,6 +35,14 @@ const getImagesFromString = (text: string, numberToShow: number = 1) => {
   return [
     ...new Set(matches.map((match) => match.trim().replace('"', ""))),
   ].slice(0, numberToShow);
+};
+
+const getTwitterIdFromString = (text: string) => {
+  const twitterRegex = /(https?:\/\/twitter.com\/.*)/gi;
+  const matches = text.match(twitterRegex);
+  if (!matches || matches.length === 0) return null;
+
+  return matches[0].split("/").slice(-1).join("");
 };
 
 const depthTheming = [
@@ -95,6 +104,7 @@ export default function MessageComponent({
 
   const isWrittenByCurrentUser = message.userId === user?.id;
   const messageDate = new Date(message.createdAt);
+  const twitterId = getTwitterIdFromString(message.text);
   const formattedMessage = getFormattedMessageText(message.text);
   const imagesToDisplay = getImagesFromString(formattedMessage);
   const borderTheme = depthTheming[depth];
@@ -156,6 +166,12 @@ export default function MessageComponent({
               />
             ))}
           </div>
+          {twitterId && (
+            <TwitterEmbed
+              twitterId={twitterId}
+              showOnInitialLoad={newerThanInitialLoad}
+            />
+          )}
           <div className="mt-4 flex gap-0.5">
             {depth < 8 && (
               <button

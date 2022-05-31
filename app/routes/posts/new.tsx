@@ -116,7 +116,7 @@ export default function NewPostPage() {
               name="title"
               defaultValue={actionData?.fields?.title}
               ref={titleRef}
-              className="block"
+              className="block dark:text-black"
             />
             {actionData?.errors?.title && (
               <div className="pt-1 text-red-700" id="title-error">

@@ -61,6 +61,7 @@
     "react-favicon": "^1.0.0",
     "react-konami-code": "^2.2.2",
     "react-time-ago": "^7.1.9",
+    "react-twitter-embed": "^4.0.4",
     "remix-params-helper": "^0.4.10",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1",
