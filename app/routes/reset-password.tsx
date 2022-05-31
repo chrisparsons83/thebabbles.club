@@ -6,7 +6,12 @@ import { findUserByPasswordResetInfo, updateUser } from "~/models/user.server";
 
 import { createUserSession, getUserId } from "~/session.server";
 import type { User } from "~/models/user.server";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useSearchParams,
+} from "@remix-run/react";
 
 const ParamsSchema = z.object({
   user: z.string(),
@@ -18,6 +23,8 @@ interface ActionData {
     password?: string;
     passwordConfirm?: string;
   };
+  userId?: string;
+  key?: string;
 }
 
 interface LoaderData {
@@ -36,21 +43,37 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   if (typeof password !== "string") {
-    return json<ActionData>({
-      errors: { password: "New Password is required" },
-    });
+    return json<ActionData>(
+      {
+        errors: { password: "New Password is required" },
+      },
+      { status: 400 }
+    );
   }
 
   if (typeof passwordConfirm !== "string") {
-    return json<ActionData>({
-      errors: { password: "Confirm New Password is required" },
-    });
+    return json<ActionData>(
+      {
+        errors: { password: "Confirm New Password is required" },
+      },
+      { status: 400 }
+    );
+  }
+
+  if (password.length < 8) {
+    return json<ActionData>(
+      { errors: { password: "Password is too short" } },
+      { status: 400 }
+    );
   }
 
   if (password !== passwordConfirm) {
-    return json<ActionData>({
-      errors: { passwordConfirm: "Passwords do not match" },
-    });
+    return json<ActionData>(
+      {
+        errors: { passwordConfirm: "Passwords do not match" },
+      },
+      { status: 400 }
+    );
   }
 
   const existingUser = await findUserByPasswordResetInfo(userId, key);
@@ -97,15 +120,17 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function ResetPassword() {
   const { user } = useLoaderData<LoaderData>();
+  const [searchParams] = useSearchParams();
   const actionData = useActionData();
-  console.log(user);
+
+  const action = `?${searchParams.toString()}`;
 
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md p-8">
         <h1 className="mb-4 text-2xl font-bold">Reset Your Password</h1>
         <p>Thanks {user.username}, please set your new password below.</p>
-        <Form method="post" className="space-y-6" noValidate>
+        <Form method="post" className="space-y-6" action={action} noValidate>
           <div>
             <label htmlFor="password">New Password</label>
             <div className="mt-1">

@@ -63,7 +63,6 @@ export async function updateUser(
 ) {
   // TODO: Figure out this type
   const dataToSend: any = { ...dataToUpdate };
-  console.log(password);
 
   if (password) {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -73,8 +72,6 @@ export async function updateUser(
       },
     };
   }
-
-  console.log(dataToSend);
 
   return prisma.user.update({
     where: { id },
