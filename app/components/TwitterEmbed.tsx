@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TwitterTweetEmbed } from "react-twitter-embed";
+import { Theme, useTheme } from "~/themeContext";
 
 type Props = {
   twitterId: string;
@@ -8,6 +9,7 @@ type Props = {
 
 export default function TwitterEmbed({ twitterId, showOnInitialLoad }: Props) {
   const [show, setShow] = useState(showOnInitialLoad);
+  const [theme] = useTheme();
 
   useEffect(() => {
     setShow(showOnInitialLoad);
@@ -15,6 +17,10 @@ export default function TwitterEmbed({ twitterId, showOnInitialLoad }: Props) {
 
   const toggle = () => {
     setShow((prevState) => !prevState);
+  };
+
+  const options = {
+    theme: !theme || theme === Theme.DARK ? "dark" : "light",
   };
 
   if (!show)
@@ -26,7 +32,7 @@ export default function TwitterEmbed({ twitterId, showOnInitialLoad }: Props) {
 
   return (
     <div>
-      <TwitterTweetEmbed tweetId={twitterId} />
+      <TwitterTweetEmbed tweetId={twitterId} options={options} />
       <button onClick={toggle} className="btn btn-secondary btn-xs">
         Hide Tweet
       </button>
