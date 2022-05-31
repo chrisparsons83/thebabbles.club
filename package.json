@@ -61,9 +61,11 @@
     "react-favicon": "^1.0.0",
     "react-konami-code": "^2.2.2",
     "react-time-ago": "^7.1.9",
+    "remix-params-helper": "^0.4.10",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1",
-    "tiny-invariant": "^1.2.0"
+    "tiny-invariant": "^1.2.0",
+    "zod": "^3.17.3"
   },
   "devDependencies": {
     "@faker-js/faker": "^6.1.1",

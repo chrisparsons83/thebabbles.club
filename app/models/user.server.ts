@@ -63,6 +63,8 @@ export async function updateUser(
 ) {
   // TODO: Figure out this type
   const dataToSend: any = { ...dataToUpdate };
+  console.log(password);
+
   if (password) {
     const hashedPassword = await bcrypt.hash(password, 10);
     dataToSend.password = {
@@ -72,9 +74,11 @@ export async function updateUser(
     };
   }
 
+  console.log(dataToSend);
+
   return prisma.user.update({
     where: { id },
-    data: dataToUpdate,
+    data: dataToSend,
   });
 }
 
@@ -154,7 +158,7 @@ export async function forgotPassword(email: User["email"], website: string) {
     "Click on the following link, or paste this into your browser to complete the process:\n\n" +
     url.toString() +
     "\n\n" +
-    "If you did not request this, please ignore this email and your password will remain unchanged.\n";
+    "This link will expire in one hour. If you did not request this, please ignore this email and your password will remain unchanged.\n";
 
   const msg = {
     to: user.email,
@@ -171,4 +175,19 @@ export async function forgotPassword(email: User["email"], website: string) {
   }
 
   return true;
+}
+
+export async function findUserByPasswordResetInfo(
+  id: User["id"],
+  key: User["passwordResetHash"]
+) {
+  return prisma.user.findFirst({
+    where: {
+      id,
+      passwordResetHash: key,
+      passwordResetExpires: {
+        gte: new Date(),
+      },
+    },
+  });
 }
