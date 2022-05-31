@@ -92,23 +92,31 @@ export default function UserEditPath() {
       <h1>Editing User {username}</h1>
       {response && <div className="alert alert-success mb-4">{response}</div>}
       {error && <div className="alert alert-error mb-4">{error}</div>}
-      <Form method="post" encType="multipart/form-data">
+      <Form method="post" className="space-y-6" encType="multipart/form-data">
         <input type="hidden" name="id" defaultValue={id} />
         <div>
           <label>Email Address</label>
-          <input type="email" name="email" defaultValue={email} />
+          <div className="mt-1">
+            <input type="email" name="email" defaultValue={email} />
+          </div>
         </div>
         <div>
           <label>Password</label>
-          <input type="password" name="password" />
+          <div className="mt-1">
+            <input type="password" name="password" />
+          </div>
         </div>
         <div>
           <label>Confirm Password</label>
-          <input type="password" name="confirmPassword" />
+          <div className="mt-1">
+            <input type="password" name="confirmPassword" />
+          </div>
         </div>
         <div>
           <label>Avatar</label>
-          <input type="file" name="avatar" accept="image/*" />
+          <div className="mt-1">
+            <input type="file" name="avatar" accept="image/*" />
+          </div>
         </div>
         <div>
           <button type="submit" className="btn btn-primary">

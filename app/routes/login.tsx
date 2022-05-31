@@ -161,7 +161,6 @@ export default function LoginPage() {
               </label>
             </div>
             <div className="text-center text-sm">
-              Don't have an account?{" "}
               <Link
                 className="underline"
                 to={{
@@ -170,6 +169,15 @@ export default function LoginPage() {
                 }}
               >
                 Sign up
+              </Link>{" "}
+              |{" "}
+              <Link
+                className="underline"
+                to={{
+                  pathname: "/forgot-password",
+                }}
+              >
+                Forgot Password?
               </Link>
             </div>
           </div>

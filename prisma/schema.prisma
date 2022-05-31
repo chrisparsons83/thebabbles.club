@@ -23,6 +23,9 @@ model User {
 
   avatar   String?
 
+  passwordResetHash String?
+  passwordResetExpires DateTime?
+
   isActive Boolean @default(false)
 }
 

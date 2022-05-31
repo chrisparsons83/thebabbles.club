@@ -1,7 +1,9 @@
 import type { Password, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import * as crypto from "crypto";
 
 import { prisma } from "~/db.server";
+import sg from "~/lib/sendgrid";
 
 export type { User } from "@prisma/client";
 
@@ -61,6 +63,7 @@ export async function updateUser(
 ) {
   // TODO: Figure out this type
   const dataToSend: any = { ...dataToUpdate };
+
   if (password) {
     const hashedPassword = await bcrypt.hash(password, 10);
     dataToSend.password = {
@@ -72,7 +75,7 @@ export async function updateUser(
 
   return prisma.user.update({
     where: { id },
-    data: dataToUpdate,
+    data: dataToSend,
   });
 }
 
@@ -120,5 +123,68 @@ export async function deactivateUser(id: User["id"]) {
   return prisma.user.update({
     where: { id },
     data: { isActive: false },
+  });
+}
+
+export async function forgotPassword(email: User["email"], website: string) {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    return null;
+  }
+
+  const passwordResetHash = crypto.randomBytes(20).toString("hex");
+  const passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordResetHash,
+      passwordResetExpires,
+    },
+  });
+
+  const url = new URL(`${website}/reset-password`);
+  url.search = new URLSearchParams({
+    user: user.id,
+    key: passwordResetHash,
+  }).toString();
+
+  const emailMessage =
+    "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
+    "Click on the following link, or paste this into your browser to complete the process:\n\n" +
+    url.toString() +
+    "\n\n" +
+    "This link will expire in one hour. If you did not request this, please ignore this email and your password will remain unchanged.\n";
+
+  const msg = {
+    to: user.email,
+    from: "admin@thebabbles.club",
+    subject: "Reset your password",
+    text: emailMessage,
+    html: emailMessage.replace(/(?:\r\n|\r|\n)/g, "<br>"),
+  };
+
+  try {
+    await sg.send(msg);
+  } catch (error) {
+    console.error(error);
+  }
+
+  return true;
+}
+
+export async function findUserByPasswordResetInfo(
+  id: User["id"],
+  key: User["passwordResetHash"]
+) {
+  return prisma.user.findFirst({
+    where: {
+      id,
+      passwordResetHash: key,
+      passwordResetExpires: {
+        gte: new Date(),
+      },
+    },
   });
 }
