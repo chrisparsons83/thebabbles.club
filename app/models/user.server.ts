@@ -153,7 +153,7 @@ export async function forgotPassword(email: User["email"], website: string) {
   const emailMessage =
     "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
     "Click on the following link, or paste this into your browser to complete the process:\n\n" +
-    url.toString() +
+    url.toString().replace("http", "https") +
     "\n\n" +
     "This link will expire in one hour. If you did not request this, please ignore this email and your password will remain unchanged.\n";
 
