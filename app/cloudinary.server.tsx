@@ -32,4 +32,15 @@ async function uploadImage(fileStream: Stream, folder: string = "misc") {
   });
 }
 
-export { hasSecureUrl, uploadImage };
+async function uploadImageURL(file: string, folder: string = "misc") {
+  const upload = await cloudinary.v2.uploader.upload(file, (error, result) => {
+    if (error) {
+      console.error(error);
+      return null;
+    }
+    return result;
+  });
+  return upload;
+}
+
+export { hasSecureUrl, uploadImage, uploadImageURL };
