@@ -38,6 +38,8 @@ The database seed script creates a new user with some data you can use to get st
 
 We use GitHub Actions for continuous integration and deployment. Anything that gets into the `main` branch will be deployed to production after running tests/build/etc. Anything in the `dev` branch will be deployed to staging.
 
+This setup deploys to [Fly.io](https://fly.io).
+
 ## Testing
 
 ### Cypress
