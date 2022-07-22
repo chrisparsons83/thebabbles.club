@@ -1,4 +1,3 @@
-import { memo } from 'react'
 import { useFetcher } from "@remix-run/react";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
@@ -100,4 +99,4 @@ const LikeButton = ({ message, emoji }: Props) => {
   );
 }
 
-export default memo(LikeButton);
+export default LikeButton;
