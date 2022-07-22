@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useFetcher } from "@remix-run/react";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
@@ -16,7 +17,7 @@ type FetcherData = {
   unlike?: LikeWithUser;
 };
 
-export default function LikeButton({ message, emoji }: Props) {
+const LikeButton = ({ message, emoji }: Props) => {
   const fetcher = useFetcher<FetcherData>();
   const [lastState, setLastState] = useState("");
   const socket = useSocket();
@@ -98,3 +99,5 @@ export default function LikeButton({ message, emoji }: Props) {
     </div>
   );
 }
+
+export default memo(LikeButton);

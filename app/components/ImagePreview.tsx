@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 type Props = {
   image: string;
   showOnInitialLoad: boolean;
 };
 
-export default function ImagePreview({ image, showOnInitialLoad }: Props) {
+const ImagePreview = ({ image, showOnInitialLoad }: Props) => {
   const [show, setShow] = useState(showOnInitialLoad);
 
   useEffect(() => {
@@ -67,4 +67,6 @@ export default function ImagePreview({ image, showOnInitialLoad }: Props) {
       </button>
     </div>
   );
-}
+};
+
+export default memo(ImagePreview);

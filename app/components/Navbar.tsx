@@ -1,11 +1,12 @@
 import { Link } from "@remix-run/react";
+import { memo } from "react";
 import type { User } from "~/models/user.server";
 
 type Props = {
   user: User | null;
 };
 
-export default function Navbar({ user }: Props) {
+const Navbar = ({ user }: Props) => {
   return (
     <div className="mb-4 bg-primary py-2">
       <div className="flex items-center px-4 md:container md:mx-auto">
@@ -25,4 +26,6 @@ export default function Navbar({ user }: Props) {
       </div>
     </div>
   );
-}
+};
+
+export default memo(Navbar);
