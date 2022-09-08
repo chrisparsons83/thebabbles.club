@@ -42,7 +42,7 @@ const getTwitterIdFromString = (text: string) => {
   const matches = text.match(twitterRegex);
   if (!matches || matches.length === 0) return null;
 
-  return matches[0].split("/").slice(-1).join("");
+  return matches[0].split("/").slice(-1).join("").split('?')[0];
 };
 
 const depthTheming = [
