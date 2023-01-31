@@ -4,6 +4,8 @@ This is the main website for The Babbles website.
 
 ## Development
 
+### Installing
+
 - Start the Postgres Database in [Docker](https://www.docker.com/get-started):
 
   ```sh
