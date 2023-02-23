@@ -43,7 +43,7 @@
     "@sendgrid/mail": "^7.7.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.29.1",
-    "cloudinary-react": "^1.7.2",
+    "cloudinary-react": "^1.8.1",
     "clsx": "^1.1.1",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
