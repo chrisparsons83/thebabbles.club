@@ -54,12 +54,11 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const { id: userId } = await requireActiveUser(request);
 
-  const uploadHandler: UploadHandler = async ({ name, stream, filename }) => {
+  const uploadHandler: UploadHandler = async ({ name, data, filename }) => {
     if (name !== "gif" || (name === "gif" && !filename)) {
-      stream.resume();
-      return;
+      return undefined;
     }
-    const uploadedImage = await uploadImage(stream, "posts").catch((err) =>
+    const uploadedImage = await uploadImage(data, "posts").catch((err) =>
       console.error(err)
     );
     return hasSecureUrl(uploadedImage) ? uploadedImage.secure_url : "";

@@ -1,6 +1,6 @@
+import { writeAsyncIterableToWritable } from "@remix-run/node";
 import type { UploadApiResponse } from "cloudinary";
 import cloudinary from "cloudinary";
-import type { Stream } from "stream";
 
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -15,21 +15,29 @@ function hasSecureUrl(obj: unknown): obj is UploadApiResponse {
   );
 }
 
-async function uploadImage(fileStream: Stream, folder: string = "misc") {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.v2.uploader.upload_stream(
-      {
-        folder,
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
+async function uploadImage(
+  data: AsyncIterable<Uint8Array>,
+  folder: string = "misc"
+) {
+  const uploadPromise = new Promise<UploadApiResponse>(
+    async (resolve, reject) => {
+      const uploadStream = cloudinary.v2.uploader.upload_stream(
+        {
+          folder,
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(result!);
         }
-        resolve(result);
-      }
-    );
-    fileStream.pipe(uploadStream);
-  });
+      );
+      await writeAsyncIterableToWritable(data, uploadStream);
+    }
+  );
+
+  return uploadPromise;
 }
 
 async function uploadImageURL(file: string, folder: string = "misc") {

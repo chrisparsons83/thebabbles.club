@@ -1,6 +1,6 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { ActionFunction, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
+import { Form, Link, useActionData } from "@remix-run/react";
 import type { User } from "~/models/user.server";
 import {
   activateUser,
@@ -10,6 +10,7 @@ import {
   getUserById,
 } from "~/models/user.server";
 import { requireActiveUser } from "~/session.server";
+import { typedjson, useTypedLoaderData } from "remix-typedjson";
 
 type ActionData = {
   formError?: string;
@@ -76,17 +77,16 @@ export const action: ActionFunction = async ({ request }) => {
   return json<ActionData>({ response });
 };
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+export const loader = async ({ request }: LoaderArgs) => {
   const currentUser = await requireActiveUser(request);
   const activeUsers = await getActiveUsers();
   const inactiveUsers = await getInactiveUsers();
-  return json<LoaderData>({ currentUser, activeUsers, inactiveUsers });
+  return typedjson<LoaderData>({ currentUser, activeUsers, inactiveUsers });
 };
 
 export default function UserIndex() {
   const actionData = useActionData() as ActionData;
-  const { currentUser, activeUsers, inactiveUsers } =
-    useLoaderData<LoaderData>();
+  const { currentUser, activeUsers, inactiveUsers } = useTypedLoaderData();
 
   const response = actionData?.response;
 
@@ -97,11 +97,26 @@ export default function UserIndex() {
         <h1>User Index</h1>
         <div className="alert alert-warning">
           <div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-            <span>Warning: Deactivating someone will remove their ability to acccess the website!</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 flex-shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <span>
+              Warning: Deactivating someone will remove their ability to acccess
+              the website!
+            </span>
           </div>
         </div>
-        <table className="table table-zebra w-full">
+        <table className="table-zebra table w-full">
           <thead>
             <tr>
               <th>User</th>
@@ -137,7 +152,7 @@ export default function UserIndex() {
       </div>
       <div>
         <h1>Pending Users</h1>
-        <table className="table table-zebra w-full">
+        <table className="table-zebra table w-full">
           <thead>
             <tr>
               <th>User</th>

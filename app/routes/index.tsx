@@ -1,24 +1,24 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { requireActiveUser } from "~/session.server";
 
 import type { Post } from "~/models/post.server";
 import { getPosts } from "~/models/post.server";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import ReactTimeAgo from "react-time-ago";
+import { typedjson, useTypedLoaderData } from "remix-typedjson";
+import type { LoaderArgs } from "@remix-run/node";
 
 type LoaderData = {
   posts: Post[];
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader = async ({ request }: LoaderArgs) => {
   await requireActiveUser(request);
   const posts = await getPosts();
-  return json<LoaderData>({ posts });
+  return typedjson<LoaderData>({ posts });
 };
 
 export default function Index() {
-  const data = useLoaderData<LoaderData>();
+  const data = useTypedLoaderData();
 
   return (
     <main className="md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-3">

@@ -1,8 +1,4 @@
-import type {
-  LinksFunction,
-  LoaderFunction,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LinksFunction, LoaderArgs, MetaFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -17,6 +13,7 @@ import type { User } from "@prisma/client";
 import { useEffect, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
+import { typedjson, useTypedLoaderData } from "remix-typedjson";
 
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
@@ -87,7 +84,7 @@ type LoaderData = {
   theme: Theme | null;
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader = async ({ request }: LoaderArgs) => {
   const themeSession = await getThemeSession(request);
 
   const data: LoaderData = {
@@ -95,11 +92,11 @@ export const loader: LoaderFunction = async ({ request }) => {
     user: await getUser(request),
   };
 
-  return data;
+  return typedjson(data);
 };
 
 export function App() {
-  const data = useLoaderData<LoaderData>();
+  const data = useTypedLoaderData<typeof loader>();
   const [socket, setSocket] = useState<Socket>();
   const { setUser } = useBabblesContext();
   const [theme] = useTheme();

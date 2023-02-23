@@ -18,12 +18,11 @@ type ActionData = {
 export const action: ActionFunction = async ({ request }) => {
   await requireActiveUser(request);
 
-  const uploadHandler: UploadHandler = async ({ name, stream, filename }) => {
+  const uploadHandler: UploadHandler = async ({ name, data, filename }) => {
     if (name !== "avatar" || (name === "avatar" && !filename)) {
-      stream.resume();
-      return;
+      return undefined;
     }
-    const uploadedImage = await uploadImage(stream, "avatars").catch((err) =>
+    const uploadedImage = await uploadImage(data, "avatars").catch((err) =>
       console.error(err)
     );
     return hasSecureUrl(uploadedImage) ? uploadedImage.secure_url : "";
