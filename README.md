@@ -2,7 +2,7 @@
 
 This is the main website for The Babbles website.
 
-## Development
+## Development Info
 
 ### Installing
 
