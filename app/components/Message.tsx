@@ -3,7 +3,7 @@ import parse from "html-react-parser";
 import { useEffect, useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 import { useBabblesContext } from "~/babblesContext";
-import { getFormattedMessageText } from "~/lib/format";
+import { getFormattedMessageText, replaceOptions } from "~/lib/format";
 import { Image, Transformation } from "cloudinary-react";
 
 import type { MessageWithUser } from "~/models/message.server";
@@ -42,7 +42,7 @@ const getTwitterIdFromString = (text: string) => {
   const matches = text.match(twitterRegex);
   if (!matches || matches.length === 0) return null;
 
-  return matches[0].split("/").slice(-1).join("").split('?')[0];
+  return matches[0].split("/").slice(-1).join("").split("?")[0];
 };
 
 const depthTheming = [
@@ -156,7 +156,9 @@ export default function MessageComponent({
           </div>
         </div>
         <div>
-          <div className="my-6 break-words">{parse(formattedMessage)}</div>
+          <div className="my-6 break-words">
+            {parse(formattedMessage, replaceOptions)}
+          </div>
           <div className="">
             {imagesToDisplay.map((image) => (
               <ImagePreview
