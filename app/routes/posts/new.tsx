@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import type {
-  ActionFunction,
-  LoaderFunction,
-  UploadHandler,
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import {
+  unstable_composeUploadHandlers,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData,
+  json,
+  redirect,
 } from "@remix-run/node";
-import { unstable_parseMultipartFormData } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import { requireActiveUser } from "~/session.server";
 import { createPost } from "~/models/post.server";
@@ -54,15 +55,18 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const { id: userId } = await requireActiveUser(request);
 
-  const uploadHandler: UploadHandler = async ({ name, data, filename }) => {
-    if (name !== "gif" || (name === "gif" && !filename)) {
-      return undefined;
-    }
-    const uploadedImage = await uploadImage(data, "posts").catch((err) =>
-      console.error(err)
-    );
-    return hasSecureUrl(uploadedImage) ? uploadedImage.secure_url : "";
-  };
+  const uploadHandler = unstable_composeUploadHandlers(
+    async ({ name, data, filename }) => {
+      if (name !== "gif" || (name === "gif" && !filename)) {
+        return undefined;
+      }
+      const uploadedImage = await uploadImage(data, "posts").catch((err) =>
+        console.error(err)
+      );
+      return hasSecureUrl(uploadedImage) ? uploadedImage.secure_url : "";
+    },
+    unstable_createMemoryUploadHandler()
+  );
 
   const formData = await unstable_parseMultipartFormData(
     request,
@@ -85,8 +89,6 @@ export const action: ActionFunction = async ({ request }) => {
       { status: 400 }
     );
   }
-
-  console.log({ title, gif, gifURL, fileUploadType });
 
   let image = fileUploadType === "URL" ? `${gifURL}` : `${gif}`;
 
