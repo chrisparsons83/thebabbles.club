@@ -18,7 +18,6 @@ import { useSocket } from "~/context";
 import type { Like, LikeWithUser } from "~/models/like.server";
 import { deleteLike, findLikeByUserAndMessage } from "~/models/like.server";
 import { createLike } from "~/models/like.server";
-import { useInterval } from "~/lib/useInterval";
 
 const INITIAL_SYNC_TIMER = 60000;
 const SECOND_SYNC_TIMER = 10000;
@@ -309,13 +308,6 @@ export default function PostPage() {
 
     setListOfMessages(() => data.post?.messages!);
   }, [data, setListOfMessages]);
-
-  useInterval(() => {
-    if (!data.post || !socket) return;
-
-    const numberOfMessagesInList = listOfMessages.length;
-    socket.emit("ping", { postId: data.post.id, numberOfMessagesInList });
-  }, syncTimer);
 
   if (!data.post) {
     return null;
