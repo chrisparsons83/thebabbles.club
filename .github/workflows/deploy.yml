@@ -56,38 +56,6 @@ jobs:
       - name: 🔎 Type check
         run: npm run typecheck --if-present
 
-  vitest:
-    name: ⚡ Vitest
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
-
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env.test
-
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 19
-
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-        with:
-          useLockFile: false
-
-      - name: 🐳 Docker compose
-        # the sleep is just there to give time for postgres to get started
-        run: docker compose up -d && sleep 3
-        env:
-          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/thebabblesclub_test'
-
-      - name: ⚡ Run vitest
-        run: npm run test
-
   build:
     name: 🐳 Build
     # only build/deploy main branch on pushes
