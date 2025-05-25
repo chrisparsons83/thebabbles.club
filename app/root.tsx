@@ -145,7 +145,6 @@ export function App() {
         </Drawer>
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   );
