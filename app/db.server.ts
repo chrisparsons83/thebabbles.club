@@ -25,7 +25,7 @@ function getClient() {
   console.log(DATABASE_URL);
   invariant(typeof DATABASE_URL === "string", "DATABASE_URL env var not set");
 
-  const databaseUrl = new URL(DATABASE_URL);
+  const databaseUrl = new URL(DATABASE_URL.replace(/^['"]|['"]$/g, ""));
 
   const isLocalHost = databaseUrl.hostname === "localhost";
 
