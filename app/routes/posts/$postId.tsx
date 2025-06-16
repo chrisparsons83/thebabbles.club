@@ -13,6 +13,7 @@ import { updateMessage , createMessage } from "~/models/message.server";
 import { getPost } from "~/models/post.server";
 import MessageComponent from "~/components/Message";
 import MessageForm from "~/components/MessageForm";
+import GoToNextUnreadButton from "~/components/GoToNextUnreadButton";
 import { useSocket } from "~/context";
 import type { Like, LikeWithUser } from "~/models/like.server";
 import { deleteLike, findLikeByUserAndMessage , createLike } from "~/models/like.server";
@@ -211,7 +212,7 @@ export default function PostPage() {
     ([] as MessageWithUser[]);
   const [syncTimer, setSyncTimer] = useState<number | null>(INITIAL_SYNC_TIMER);
   const [pageLoadTime, setPageLoadTime] = useState(new Date());
-  const [unreadMessages, setUnreadMessages] = useState<Message[]>([]);
+  const [unreadMessages, setUnreadMessages] = useState<MessageWithUser[]>([]);
 
   const handleClearMessages = () => {
     setPageLoadTime(() => new Date());
@@ -219,9 +220,28 @@ export default function PostPage() {
   };
 
   const handleReadMessage = (message: MessageWithUser) => {
+    // It's possible the message is already marked as read by scrolling past it
+    // or by clicking the button, so we check if it's still in unreadMessages.
     setUnreadMessages((messages) =>
-      messages.filter((m) => message && m.id !== message.id)
+      messages.filter((m) => m && message && m.id !== message.id)
     );
+  };
+
+  const handleScrollToNextUnread = () => {
+    if (unreadMessages.length > 0) {
+      // unreadMessages are sorted by createdAt ascending by the socket handler
+      for (const message of unreadMessages) {
+        if (message && message.id) {
+          const element = document.getElementById(`message-${message.id}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Optional: Mark as read after scrolling to it.
+            // handleReadMessage(message);
+            break;
+          }
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -240,7 +260,18 @@ export default function PostPage() {
       if (listOfMessages.some((message) => message?.id === newMessage.id))
         return;
 
-      setUnreadMessages((messages) => [...messages, newMessage]);
+      setUnreadMessages((messages) => {
+        // Add to unread only if not already present and sort by creation time
+        if (newMessage && !messages.find(m => m && m.id === newMessage.id)) {
+          return [...messages, newMessage].sort((a, b) => {
+            if (a && b && a.createdAt && b.createdAt) {
+              return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            }
+            return 0; // Default sort or error handling
+          });
+        }
+        return messages;
+      });
       setListOfMessages((messages) => [newMessage, ...messages]);
     });
 
@@ -368,6 +399,10 @@ export default function PostPage() {
             );
           })}
       </div>
+      <GoToNextUnreadButton
+        unreadMessagesCount={unreadMessages.length}
+        onScrollToNext={handleScrollToNextUnread}
+      />
     </div>
   );
 }

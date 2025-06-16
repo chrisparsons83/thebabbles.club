@@ -113,7 +113,7 @@ export default function MessageComponent({
   const cloudinaryAvatarId = getAvatarCloudinaryId(message.user.avatar);
 
   return (
-    <div
+    <div id={`message-${message.id}`}
       className={clsx(
         borderTheme,
         "border-l-4",
