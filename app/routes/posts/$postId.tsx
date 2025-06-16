@@ -9,15 +9,13 @@ import Favicon from "react-favicon";
 import { requireActiveUser } from "~/session.server";
 import type { PostWithMessages } from "~/models/post.server";
 import type { Message, MessageWithUser } from "~/models/message.server";
-import { updateMessage } from "~/models/message.server";
-import { createMessage } from "~/models/message.server";
+import { updateMessage , createMessage } from "~/models/message.server";
 import { getPost } from "~/models/post.server";
 import MessageComponent from "~/components/Message";
 import MessageForm from "~/components/MessageForm";
 import { useSocket } from "~/context";
 import type { Like, LikeWithUser } from "~/models/like.server";
-import { deleteLike, findLikeByUserAndMessage } from "~/models/like.server";
-import { createLike } from "~/models/like.server";
+import { deleteLike, findLikeByUserAndMessage , createLike } from "~/models/like.server";
 
 const INITIAL_SYNC_TIMER = 60000;
 const SECOND_SYNC_TIMER = 10000;
@@ -306,7 +304,7 @@ export default function PostPage() {
   useEffect(() => {
     if (!data.post) return;
 
-    setListOfMessages(() => data.post?.messages!);
+    setListOfMessages(() => data.post?.messages || []);
   }, [data, setListOfMessages]);
 
   if (!data.post) {
