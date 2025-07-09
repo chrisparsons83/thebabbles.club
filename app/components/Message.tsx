@@ -11,6 +11,7 @@ import ImagePreview from "./ImagePreview";
 import LikeButton from "./LikeButton";
 import MessageForm from "./MessageForm";
 import TwitterEmbed from "./TwitterEmbed";
+import ThreadsEmbed from "./ThreadsEmbed";
 
 type Props = {
   message: NonNullable<MessageWithUser>;
@@ -43,6 +44,14 @@ const getTwitterIdFromString = (text: string) => {
   if (!matches || matches.length === 0) return null;
 
   return matches[0].split("/").slice(-1).join("").split("?")[0];
+};
+
+const getThreadsUrlFromString = (text: string) => {
+  const threadsRegex = /(https?:\/\/(?:www\.)?threads\.com\/@[^\s"]+\/post\/[^\s"]+)/gi;
+  const matches = text.match(threadsRegex);
+  if (!matches || matches.length === 0) return null;
+
+  return matches[0].trim().replace('"', '');
 };
 
 const depthTheming = [
@@ -105,6 +114,7 @@ export default function MessageComponent({
   const isWrittenByCurrentUser = message.userId === user?.id;
   const messageDate = new Date(message.createdAt);
   const twitterId = getTwitterIdFromString(message.text);
+  const threadsUrl = getThreadsUrlFromString(message.text);
   const formattedMessage = getFormattedMessageText(message.text);
   const imagesToDisplay = getImagesFromString(formattedMessage);
   const borderTheme = depthTheming[depth];
@@ -171,6 +181,12 @@ export default function MessageComponent({
           {twitterId && (
             <TwitterEmbed
               twitterId={twitterId}
+              showOnInitialLoad={newerThanInitialLoad}
+            />
+          )}
+          {threadsUrl && (
+            <ThreadsEmbed
+              threadsUrl={threadsUrl}
               showOnInitialLoad={newerThanInitialLoad}
             />
           )}
