@@ -39,7 +39,7 @@ const getImagesFromString = (text: string, numberToShow: number = 1) => {
 };
 
 const getTwitterIdFromString = (text: string) => {
-  const twitterRegex = /(https?:\/\/twitter.com\/.*)/gi;
+  const twitterRegex = /(https?:\/\/(twitter|x).com\/.*)/gi;
   const matches = text.match(twitterRegex);
   if (!matches || matches.length === 0) return null;
 
