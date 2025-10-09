@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 
 import invariant from "tiny-invariant";
 import Favicon from "react-favicon";
@@ -207,7 +207,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function PostPage() {
   let data = useLoaderData() as LoaderData;
   const socket = useSocket();
-  const fetcher = useFetcher<{ messages: MessageWithUser[] }>();
   const [listOfMessages, setListOfMessages] =
     useState<MessageWithUser[]>(data.post!.messages) ||
     ([] as MessageWithUser[]);
@@ -229,15 +228,8 @@ export default function PostPage() {
   };
 
   const handleScrollToNextUnread = () => {
-    // Fetch updated messages from the server (only for this client)
-    // The useEffect hook will handle updating the message list when data arrives
-    if (data.post?.id) {
-      fetcher.load(`/api/posts/${data.post.id}/messages`);
-    }
-    
-    // Scroll to the first unread message
     if (unreadMessages.length > 0) {
-      // unreadMessages are sorted by createdAt ascending
+      // unreadMessages are sorted by createdAt ascending by the socket handler
       for (const message of unreadMessages) {
         if (message && message.id) {
           const element = document.getElementById(`message-${message.id}`);
@@ -345,61 +337,6 @@ export default function PostPage() {
 
     setListOfMessages(() => data.post?.messages || []);
   }, [data, setListOfMessages]);
-
-  // Handle fetcher data updates when messages are fetched
-  useEffect(() => {
-    if (fetcher.data && fetcher.data.messages) {
-      const fetchedMessages = fetcher.data.messages;
-      
-      setListOfMessages(prevMessages => {
-        // Create a map of existing messages for quick lookup
-        const existingMessagesMap = new Map();
-        prevMessages.forEach(msg => {
-          if (msg && msg.id) {
-            existingMessagesMap.set(msg.id, msg);
-          }
-        });
-        
-        // Add or update messages from fetched data
-        fetchedMessages.forEach(fetchedMsg => {
-          if (fetchedMsg && fetchedMsg.id) {
-            existingMessagesMap.set(fetchedMsg.id, fetchedMsg);
-          }
-        });
-        
-        // Convert back to array and sort by created date (newest first)
-        return Array.from(existingMessagesMap.values())
-          .sort((a, b) => {
-            if (!a || !b || !a.createdAt || !b.createdAt) return 0;
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          });
-      });
-
-      // Update unread messages with any new messages that came after page load
-      setUnreadMessages(prevUnread => {
-        const newUnreadMessages = fetchedMessages.filter(msg => {
-          if (!msg || !msg.createdAt) return false;
-          const msgTime = new Date(msg.createdAt).getTime();
-          const pageTime = pageLoadTime.getTime();
-          return msgTime > pageTime;
-        });
-
-        // Merge with existing unread, remove duplicates, and sort
-        const unreadMap = new Map();
-        [...prevUnread, ...newUnreadMessages].forEach(msg => {
-          if (msg && msg.id) {
-            unreadMap.set(msg.id, msg);
-          }
-        });
-
-        return Array.from(unreadMap.values())
-          .sort((a, b) => {
-            if (!a || !b || !a.createdAt || !b.createdAt) return 0;
-            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          });
-      });
-    }
-  }, [fetcher.data, pageLoadTime, setListOfMessages, setUnreadMessages]);
 
   if (!data.post) {
     return null;
