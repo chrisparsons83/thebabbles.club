@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import parse from "html-react-parser";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 import { useBabblesContext } from "~/babblesContext";
 import { getFormattedMessageText, replaceOptions } from "~/lib/format";
@@ -16,7 +16,7 @@ import ThreadsEmbed from "./ThreadsEmbed";
 type Props = {
   message: NonNullable<MessageWithUser>;
   depth: number;
-  allMessages?: MessageWithUser[];
+  childrenMap: Map<string, MessageWithUser[]>;
   pageLoadTime: Date;
   cloudName?: string;
   handleReadMessage: (message: MessageWithUser) => void;
@@ -66,10 +66,10 @@ const depthTheming = [
   ["border-gray-100", "dark:border-gray-900"],
 ];
 
-export default function MessageComponent({
+function MessageComponent({
   message,
   depth,
-  allMessages,
+  childrenMap,
   pageLoadTime,
   cloudName,
   handleReadMessage,
@@ -104,10 +104,7 @@ export default function MessageComponent({
     setShowMessageForm(false);
   };
 
-  const childMessages = allMessages
-    ?.filter((m) => m?.parentId === message?.id)
-    .reverse()
-    .slice();
+  const childMessages = childrenMap.get(message.id) ?? [];
 
   if (!user) return null;
 
@@ -232,7 +229,7 @@ export default function MessageComponent({
                 <MessageComponent
                   message={message}
                   depth={depth + 1}
-                  allMessages={allMessages}
+                  childrenMap={childrenMap}
                   pageLoadTime={pageLoadTime}
                   handleReadMessage={handleReadMessage}
                 />
@@ -242,3 +239,13 @@ export default function MessageComponent({
     </div>
   );
 }
+
+export default memo(MessageComponent, (prev, next) => {
+  const prevChildIds = prev.childrenMap.get(prev.message.id)?.map(c => c.id).join(',') ?? '';
+  const nextChildIds = next.childrenMap.get(next.message.id)?.map(c => c.id).join(',') ?? '';
+  return (
+    prev.message === next.message &&
+    prevChildIds === nextChildIds &&
+    prev.pageLoadTime === next.pageLoadTime
+  );
+});

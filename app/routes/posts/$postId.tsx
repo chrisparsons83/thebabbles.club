@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
@@ -365,6 +365,18 @@ export default function PostPage() {
   const messageDisplay =
     listOfMessages.length > 0 ? listOfMessages : data.post.messages;
 
+  const childrenMap = useMemo(() => {
+    const map = new Map<string, MessageWithUser[]>();
+    messageDisplay.forEach((message) => {
+      if (message?.parentId) {
+        if (!map.has(message.parentId)) map.set(message.parentId, []);
+        map.get(message.parentId)!.push(message);
+      }
+    });
+    map.forEach((children) => children.reverse());
+    return map;
+  }, [messageDisplay]);
+
   return (
     <div>
       <Favicon url="/favicon.ico" alertCount={unreadMessages.length} />
@@ -409,7 +421,7 @@ export default function PostPage() {
                 <MessageComponent
                   message={message}
                   depth={0}
-                  allMessages={messageDisplay}
+                  childrenMap={childrenMap}
                   key={message.id}
                   pageLoadTime={pageLoadTime}
                   cloudName={data.cloudinaryCloudName}
