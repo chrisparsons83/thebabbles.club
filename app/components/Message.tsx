@@ -243,8 +243,15 @@ function MessageComponent({
   );
 }
 
-export default memo(MessageComponent, (prev, next) =>
-  prev.message === next.message &&
-  prev.structureVersion === next.structureVersion &&
-  prev.pageLoadTime === next.pageLoadTime
-);
+export default memo(MessageComponent, (prev, next) => {
+  if (prev.message !== next.message) return false;
+  if (prev.structureVersion !== next.structureVersion) return false;
+  if (prev.pageLoadTime !== next.pageLoadTime) return false;
+
+  const prevChildren = prev.childrenMap.get(prev.message.id);
+  const nextChildren = next.childrenMap.get(next.message.id);
+  if (prevChildren === nextChildren) return true;
+  if (!prevChildren || !nextChildren) return false;
+  if (prevChildren.length !== nextChildren.length) return false;
+  return prevChildren.every((child, i) => child === nextChildren[i]);
+});
