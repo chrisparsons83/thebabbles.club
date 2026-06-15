@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
@@ -214,6 +214,11 @@ export default function PostPage() {
   const [pageLoadTime, setPageLoadTime] = useState(new Date());
   const [unreadMessages, setUnreadMessages] = useState<MessageWithUser[]>([]);
 
+  // Always in sync with the latest render so socket handlers can read it
+  // without needing listOfMessages in the effect dependency array.
+  const listOfMessagesRef = useRef(listOfMessages);
+  listOfMessagesRef.current = listOfMessages;
+
   const handleClearMessages = () => {
     setPageLoadTime(() => new Date());
     setUnreadMessages([]);
@@ -230,23 +235,27 @@ export default function PostPage() {
   const handleScrollToNextUnread = () => {
     if (unreadMessages.length === 0) return;
 
-    let scrolled = false;
-    const orphaned: MessageWithUser[] = [];
+    let scrolledMessage: MessageWithUser | null = null;
+    const orphanedIds = new Set<string>();
 
     for (const message of unreadMessages) {
       if (!message?.id) continue;
       const element = document.getElementById(`message-${message.id}`);
-      if (element && !scrolled) {
+      if (element && !scrolledMessage) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        scrolled = true;
+        scrolledMessage = message;
       } else if (!element) {
-        orphaned.push(message);
+        orphanedIds.add(message.id);
       }
     }
 
-    if (orphaned.length > 0) {
+    // Only remove entries once we've confirmed the DOM is painted (at least one
+    // element was found). If nothing was found the page may still be rendering —
+    // avoid discarding valid unread notifications.
+    if (scrolledMessage) {
+      const scrolledId = scrolledMessage.id;
       setUnreadMessages((prev) =>
-        prev.filter((m) => !orphaned.some((o) => o?.id === m?.id))
+        prev.filter((m) => m?.id !== scrolledId && !(m?.id && orphanedIds.has(m.id)))
       );
     }
   };
@@ -265,17 +274,18 @@ export default function PostPage() {
 
     socket.on("messagePosted", (newMessage: MessageWithUser) => {
       if (!newMessage) return;
-      if (listOfMessages.some((message) => message?.id === newMessage.id))
+      // Use ref so this handler never needs listOfMessages in the effect deps,
+      // avoiding full listener teardown on every received message.
+      if (listOfMessagesRef.current.some((message) => message?.id === newMessage.id))
         return;
 
       setUnreadMessages((messages) => {
-        // Add to unread only if not already present and sort by creation time
-        if (newMessage && !messages.find(m => m && m.id === newMessage.id)) {
+        if (!messages.find(m => m?.id === newMessage.id)) {
           return [...messages, newMessage].sort((a, b) => {
-            if (a && b && a.createdAt && b.createdAt) {
+            if (a?.createdAt && b?.createdAt) {
               return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
             }
-            return 0; // Default sort or error handling
+            return 0;
           });
         }
         return messages;
@@ -285,53 +295,50 @@ export default function PostPage() {
 
     socket.on("messageEdited", (editedMessage: MessageWithUser) => {
       if (!editedMessage) return;
-
-      const message = listOfMessages.find((message) => {
-        return message && message.id === editedMessage.id;
+      setListOfMessages((messages) => {
+        const idx = messages.findIndex(m => m?.id === editedMessage.id);
+        if (idx === -1) return messages;
+        const existing = messages[idx];
+        if (!existing) return messages;
+        const updated = [...messages];
+        updated[idx] = { ...existing, text: editedMessage.text };
+        return updated;
       });
-
-      if (!message) return;
-
-      message.text = editedMessage.text;
-      setListOfMessages((messages) => [...messages]);
     });
 
     socket.on("likePosted", (newLike: LikeWithUser) => {
       if (!newLike) return;
-
-      const message = listOfMessages.find((message) => {
-        return message && message.id === newLike.messageId;
+      setListOfMessages((messages) => {
+        const idx = messages.findIndex(m => m?.id === newLike.messageId);
+        if (idx === -1) return messages;
+        const existing = messages[idx];
+        if (!existing) return messages;
+        const updated = [...messages];
+        updated[idx] = { ...existing, likes: [...existing.likes, newLike] };
+        return updated;
       });
-
-      if (!message) return;
-      message.likes.push(newLike);
-      setListOfMessages((messages) => [...messages]);
     });
 
     socket.on("unlikePosted", (newUnlike: LikeWithUser) => {
       if (!newUnlike) return;
-
-      const message = listOfMessages.find((message) => {
-        return message && message.id === newUnlike.messageId;
+      setListOfMessages((messages) => {
+        const idx = messages.findIndex(m => m?.id === newUnlike.messageId);
+        if (idx === -1) return messages;
+        const existing = messages[idx];
+        if (!existing) return messages;
+        const updated = [...messages];
+        updated[idx] = { ...existing, likes: existing.likes.filter(l => l.id !== newUnlike.id) };
+        return updated;
       });
-
-      if (!message) return;
-
-      message.likes = message.likes.filter((like) => {
-        return like.id !== newUnlike.id;
-      });
-
-      setListOfMessages((messages) => [...messages]);
     });
 
+    // Use functional updater so syncTimer doesn't need to be in the effect deps.
     socket.on("outOfSync", () => {
-      if (syncTimer === INITIAL_SYNC_TIMER) {
-        setSyncTimer(SECOND_SYNC_TIMER);
-      } else if (syncTimer === SECOND_SYNC_TIMER) {
-        setSyncTimer(THIRD_SYNC_TIMER);
-      } else {
-        setSyncTimer(null);
-      }
+      setSyncTimer((current) => {
+        if (current === INITIAL_SYNC_TIMER) return SECOND_SYNC_TIMER;
+        if (current === SECOND_SYNC_TIMER) return THIRD_SYNC_TIMER;
+        return null;
+      });
     });
 
     return () => {
@@ -339,17 +346,16 @@ export default function PostPage() {
       socket.io.off("reconnect", handleReconnect);
       socket.emit("leavePage", data.post?.id);
     };
-  }, [socket, data, setListOfMessages, listOfMessages, syncTimer]);
+  }, [socket, data, setListOfMessages]);
 
   useEffect(() => {
     if (!data.post) return;
-    const serverMessages = data.post?.messages || [];
+    const serverMessages = data.post.messages;
     const serverIds = new Set(serverMessages.map((m) => m?.id));
-    setListOfMessages((prev) => {
-      // Preserve socket-delivered messages not yet in server data (brief DB lag)
-      const socketOnly = prev.filter((m) => m?.id && !serverIds.has(m.id));
-      return [...socketOnly, ...serverMessages];
-    });
+    // Reset to server truth; also drop any unread entries the server no longer has
+    // (e.g. messages that were rejected or deleted before the next loader refresh).
+    setListOfMessages(serverMessages);
+    setUnreadMessages((prev) => prev.filter((m) => m?.id && serverIds.has(m.id)));
   }, [data, setListOfMessages]);
 
   if (!data.post) {
