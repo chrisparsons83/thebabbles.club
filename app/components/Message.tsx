@@ -17,6 +17,7 @@ type Props = {
   message: NonNullable<MessageWithUser>;
   depth: number;
   childrenMap: Map<string, MessageWithUser[]>;
+  structureVersion: number;
   pageLoadTime: Date;
   cloudName?: string;
   handleReadMessage: (message: MessageWithUser) => void;
@@ -70,6 +71,7 @@ function MessageComponent({
   message,
   depth,
   childrenMap,
+  structureVersion,
   pageLoadTime,
   cloudName,
   handleReadMessage,
@@ -230,6 +232,7 @@ function MessageComponent({
                   message={message}
                   depth={depth + 1}
                   childrenMap={childrenMap}
+                  structureVersion={structureVersion}
                   pageLoadTime={pageLoadTime}
                   handleReadMessage={handleReadMessage}
                 />
@@ -240,12 +243,8 @@ function MessageComponent({
   );
 }
 
-export default memo(MessageComponent, (prev, next) => {
-  const prevChildIds = prev.childrenMap.get(prev.message.id)?.map(c => c.id).join(',') ?? '';
-  const nextChildIds = next.childrenMap.get(next.message.id)?.map(c => c.id).join(',') ?? '';
-  return (
-    prev.message === next.message &&
-    prevChildIds === nextChildIds &&
-    prev.pageLoadTime === next.pageLoadTime
-  );
-});
+export default memo(MessageComponent, (prev, next) =>
+  prev.message === next.message &&
+  prev.structureVersion === next.structureVersion &&
+  prev.pageLoadTime === next.pageLoadTime
+);
