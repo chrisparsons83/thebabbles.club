@@ -228,19 +228,26 @@ export default function PostPage() {
   };
 
   const handleScrollToNextUnread = () => {
-    if (unreadMessages.length > 0) {
-      // unreadMessages are sorted by createdAt ascending by the socket handler
-      for (const message of unreadMessages) {
-        if (message && message.id) {
-          const element = document.getElementById(`message-${message.id}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // Optional: Mark as read after scrolling to it.
-            // handleReadMessage(message);
-            break;
-          }
-        }
+    if (unreadMessages.length === 0) return;
+
+    let scrolled = false;
+    const orphaned: MessageWithUser[] = [];
+
+    for (const message of unreadMessages) {
+      if (!message?.id) continue;
+      const element = document.getElementById(`message-${message.id}`);
+      if (element && !scrolled) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        scrolled = true;
+      } else if (!element) {
+        orphaned.push(message);
       }
+    }
+
+    if (orphaned.length > 0) {
+      setUnreadMessages((prev) =>
+        prev.filter((m) => !orphaned.some((o) => o?.id === m?.id))
+      );
     }
   };
 
@@ -251,9 +258,10 @@ export default function PostPage() {
       socket.emit("joinPage", data.post.id);
     }
 
-    socket.io.on("reconnect", () => {
+    const handleReconnect = () => {
       if (data.post) socket.emit("joinPage", data.post.id);
-    });
+    };
+    socket.io.on("reconnect", handleReconnect);
 
     socket.on("messagePosted", (newMessage: MessageWithUser) => {
       if (!newMessage) return;
@@ -328,14 +336,20 @@ export default function PostPage() {
 
     return () => {
       socket.removeAllListeners();
+      socket.io.off("reconnect", handleReconnect);
       socket.emit("leavePage", data.post?.id);
     };
   }, [socket, data, setListOfMessages, listOfMessages, syncTimer]);
 
   useEffect(() => {
     if (!data.post) return;
-
-    setListOfMessages(() => data.post?.messages || []);
+    const serverMessages = data.post?.messages || [];
+    const serverIds = new Set(serverMessages.map((m) => m?.id));
+    setListOfMessages((prev) => {
+      // Preserve socket-delivered messages not yet in server data (brief DB lag)
+      const socketOnly = prev.filter((m) => m?.id && !serverIds.has(m.id));
+      return [...socketOnly, ...serverMessages];
+    });
   }, [data, setListOfMessages]);
 
   if (!data.post) {
