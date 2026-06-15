@@ -358,12 +358,8 @@ export default function PostPage() {
     setUnreadMessages((prev) => prev.filter((m) => m?.id && serverIds.has(m.id)));
   }, [data, setListOfMessages]);
 
-  if (!data.post) {
-    return null;
-  }
-
   const messageDisplay =
-    listOfMessages.length > 0 ? listOfMessages : data.post.messages;
+    listOfMessages.length > 0 ? listOfMessages : data.post?.messages ?? [];
 
   const childrenMap = useMemo(() => {
     const map = new Map<string, MessageWithUser[]>();
@@ -376,6 +372,10 @@ export default function PostPage() {
     map.forEach((children) => children.reverse());
     return map;
   }, [messageDisplay]);
+
+  if (!data.post) {
+    return null;
+  }
 
   return (
     <div>
