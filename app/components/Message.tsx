@@ -17,7 +17,6 @@ type Props = {
   message: NonNullable<MessageWithUser>;
   depth: number;
   childrenMap: Map<string, MessageWithUser[]>;
-  structureVersion: number;
   pageLoadTime: Date;
   cloudName?: string;
   handleReadMessage: (message: MessageWithUser) => void;
@@ -71,7 +70,6 @@ function MessageComponent({
   message,
   depth,
   childrenMap,
-  structureVersion,
   pageLoadTime,
   cloudName,
   handleReadMessage,
@@ -106,7 +104,7 @@ function MessageComponent({
     setShowMessageForm(false);
   };
 
-  const childMessages = childrenMap.get(message.id) ?? [];
+  const childMessages = childrenMap.get(message.id)?.slice() ?? [];
 
   if (!user) return null;
 
@@ -232,8 +230,8 @@ function MessageComponent({
                   message={message}
                   depth={depth + 1}
                   childrenMap={childrenMap}
-                  structureVersion={structureVersion}
                   pageLoadTime={pageLoadTime}
+                  cloudName={cloudName}
                   handleReadMessage={handleReadMessage}
                 />
               </div>
@@ -245,12 +243,11 @@ function MessageComponent({
 
 export default memo(MessageComponent, (prev, next) => {
   if (prev.message !== next.message) return false;
-  if (prev.structureVersion !== next.structureVersion) return false;
   if (prev.pageLoadTime !== next.pageLoadTime) return false;
 
   const prevChildren = prev.childrenMap.get(prev.message.id);
   const nextChildren = next.childrenMap.get(next.message.id);
-  if (prevChildren === nextChildren) return true;
+  if (!prevChildren && !nextChildren) return true;
   if (!prevChildren || !nextChildren) return false;
   if (prevChildren.length !== nextChildren.length) return false;
   return prevChildren.every((child, i) => child === nextChildren[i]);

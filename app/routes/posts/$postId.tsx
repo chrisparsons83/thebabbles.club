@@ -422,7 +422,6 @@ export default function PostPage() {
                   message={message}
                   depth={0}
                   childrenMap={childrenMap}
-                  structureVersion={messageDisplay.length}
                   key={message.id}
                   pageLoadTime={pageLoadTime}
                   cloudName={data.cloudinaryCloudName}
