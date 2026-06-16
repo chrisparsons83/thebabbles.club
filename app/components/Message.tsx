@@ -104,7 +104,7 @@ function MessageComponent({
     setShowMessageForm(false);
   };
 
-  const childMessages = childrenMap.get(message.id)?.slice() ?? [];
+  const childMessages = childrenMap.get(message.id) ?? [];
 
   if (!user) return null;
 
@@ -244,14 +244,17 @@ function MessageComponent({
 function hasDescendantChanged(
   id: string,
   prevMap: Map<string, MessageWithUser[]>,
-  nextMap: Map<string, MessageWithUser[]>
+  nextMap: Map<string, MessageWithUser[]>,
+  visited: Set<string> = new Set()
 ): boolean {
+  if (visited.has(id)) return false;
+  visited.add(id);
   const prevChildren = prevMap.get(id) ?? [];
   const nextChildren = nextMap.get(id) ?? [];
   if (prevChildren.length !== nextChildren.length) return true;
   for (let i = 0; i < prevChildren.length; i++) {
     if (prevChildren[i] !== nextChildren[i]) return true;
-    if (prevChildren[i] && hasDescendantChanged(prevChildren[i].id, prevMap, nextMap)) return true;
+    if (prevChildren[i] && hasDescendantChanged(prevChildren[i].id, prevMap, nextMap, visited)) return true;
   }
   return false;
 }
@@ -259,5 +262,6 @@ function hasDescendantChanged(
 export default memo(MessageComponent, (prev, next) => {
   if (prev.message !== next.message) return false;
   if (prev.pageLoadTime !== next.pageLoadTime) return false;
+  if (prev.childrenMap === next.childrenMap) return true;
   return !hasDescendantChanged(prev.message.id, prev.childrenMap, next.childrenMap);
 });
