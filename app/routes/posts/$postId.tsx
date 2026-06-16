@@ -207,6 +207,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function PostPage() {
   let data = useLoaderData() as LoaderData;
   const socket = useSocket();
+  const postId = data.post?.id;
   const [listOfMessages, setListOfMessages] =
     useState<MessageWithUser[]>(data.post!.messages) ||
     ([] as MessageWithUser[]);
@@ -261,15 +262,11 @@ export default function PostPage() {
   };
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !postId) return;
 
-    if (data.post) {
-      socket.emit("joinPage", data.post.id);
-    }
+    socket.emit("joinPage", postId);
 
-    const handleReconnect = () => {
-      if (data.post) socket.emit("joinPage", data.post.id);
-    };
+    const handleReconnect = () => socket.emit("joinPage", postId);
     socket.io.on("reconnect", handleReconnect);
 
     socket.on("messagePosted", (newMessage: MessageWithUser) => {
@@ -313,6 +310,7 @@ export default function PostPage() {
         if (idx === -1) return messages;
         const existing = messages[idx];
         if (!existing) return messages;
+        if (existing.likes.some(l => l.id === newLike.id)) return messages;
         const updated = [...messages];
         updated[idx] = { ...existing, likes: [...existing.likes, newLike] };
         return updated;
@@ -344,9 +342,9 @@ export default function PostPage() {
     return () => {
       socket.removeAllListeners();
       socket.io.off("reconnect", handleReconnect);
-      socket.emit("leavePage", data.post?.id);
+      socket.emit("leavePage", postId);
     };
-  }, [socket, data, setListOfMessages]);
+  }, [socket, postId]);
 
   useEffect(() => {
     if (!data.post) return;
@@ -403,9 +401,9 @@ export default function PostPage() {
             viewBox="0 0 24 24"
           >
             <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
               d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>

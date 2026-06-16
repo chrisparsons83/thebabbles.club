@@ -241,14 +241,23 @@ function MessageComponent({
   );
 }
 
+function hasDescendantChanged(
+  id: string,
+  prevMap: Map<string, MessageWithUser[]>,
+  nextMap: Map<string, MessageWithUser[]>
+): boolean {
+  const prevChildren = prevMap.get(id) ?? [];
+  const nextChildren = nextMap.get(id) ?? [];
+  if (prevChildren.length !== nextChildren.length) return true;
+  for (let i = 0; i < prevChildren.length; i++) {
+    if (prevChildren[i] !== nextChildren[i]) return true;
+    if (prevChildren[i] && hasDescendantChanged(prevChildren[i].id, prevMap, nextMap)) return true;
+  }
+  return false;
+}
+
 export default memo(MessageComponent, (prev, next) => {
   if (prev.message !== next.message) return false;
   if (prev.pageLoadTime !== next.pageLoadTime) return false;
-
-  const prevChildren = prev.childrenMap.get(prev.message.id);
-  const nextChildren = next.childrenMap.get(next.message.id);
-  if (!prevChildren && !nextChildren) return true;
-  if (!prevChildren || !nextChildren) return false;
-  if (prevChildren.length !== nextChildren.length) return false;
-  return prevChildren.every((child, i) => child === nextChildren[i]);
+  return !hasDescendantChanged(prev.message.id, prev.childrenMap, next.childrenMap);
 });
