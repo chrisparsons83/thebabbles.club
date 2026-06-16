@@ -1,6 +1,6 @@
 import { useFetcher } from "@remix-run/react";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useBabblesContext } from "~/babblesContext";
 import { useSocket } from "~/context";
 import type { LikeWithUser } from "~/models/like.server";
@@ -18,17 +18,13 @@ type FetcherData = {
 
 const LikeButton = ({ message, emoji }: Props) => {
   const fetcher = useFetcher<FetcherData>();
-  const [lastState, setLastState] = useState("");
+  const processedDataRef = useRef<typeof fetcher.data | null>(null);
   const socket = useSocket();
   const { user } = useBabblesContext();
 
   useEffect(() => {
-    if (
-      fetcher.data &&
-      fetcher.state === "loading" &&
-      lastState !== "submitting" &&
-      socket
-    ) {
+    if (fetcher.data && fetcher.data !== processedDataRef.current && socket) {
+      processedDataRef.current = fetcher.data;
       if (fetcher.data.like) {
         socket.emit("likePosted", fetcher.data.like);
       }
@@ -36,9 +32,7 @@ const LikeButton = ({ message, emoji }: Props) => {
         socket.emit("unlikePosted", fetcher.data.unlike);
       }
     }
-
-    setLastState(fetcher.state);
-  }, [fetcher.data, fetcher.state, lastState, socket]);
+  }, [fetcher.data, socket]);
 
   if (!message) return null;
 

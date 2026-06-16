@@ -1,6 +1,6 @@
 import type { Message, Post } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useSocket } from "~/context";
 import type { MessageWithUser } from "~/models/message.server";
 
@@ -21,15 +21,17 @@ export default function MessageForm({
   const isAdding = fetcher.state === "submitting";
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [lastState, setLastState] = useState("");
+  const processedDataRef = useRef<typeof fetcher.data>(null);
+  const pendingCollapseRef = useRef(false);
   const socket = useSocket();
 
   useEffect(() => {
-    if (fetcher.state === "idle") {
-      if (lastState === "loading" && toggleForm) toggleForm();
+    if (fetcher.state === "submitting") {
+      pendingCollapseRef.current = true;
     }
 
-    if (fetcher.state === "loading" && lastState !== "submitting" && socket) {
+    if (fetcher.data && fetcher.data !== processedDataRef.current && socket) {
+      processedDataRef.current = fetcher.data;
       if (fetcher.data.message)
         socket.emit("messagePosted", fetcher.data.message);
       if (fetcher.data.editedMessage)
@@ -37,8 +39,11 @@ export default function MessageForm({
       formRef.current?.reset();
     }
 
-    setLastState(fetcher.state);
-  }, [fetcher.data, fetcher.state, lastState, toggleForm, socket]);
+    if (fetcher.state === "idle" && pendingCollapseRef.current) {
+      pendingCollapseRef.current = false;
+      if (toggleForm) toggleForm();
+    }
+  }, [fetcher.data, fetcher.state, toggleForm, socket]);
 
   useEffect(() => {
     const end = textareaRef?.current?.value.length || 0;
