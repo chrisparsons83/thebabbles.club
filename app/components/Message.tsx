@@ -253,8 +253,10 @@ function hasDescendantChanged(
   const nextChildren = nextMap.get(id) ?? [];
   if (prevChildren.length !== nextChildren.length) return true;
   for (let i = 0; i < prevChildren.length; i++) {
-    if (prevChildren[i] !== nextChildren[i]) return true;
-    if (prevChildren[i] && hasDescendantChanged(prevChildren[i].id, prevMap, nextMap, visited)) return true;
+    const prevChild = prevChildren[i];
+    const nextChild = nextChildren[i];
+    if (prevChild !== nextChild) return true;
+    if (prevChild && hasDescendantChanged(prevChild.id, prevMap, nextMap, visited)) return true;
   }
   return false;
 }
