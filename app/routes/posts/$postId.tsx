@@ -207,9 +207,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function PostPage() {
   let data = useLoaderData() as LoaderData;
   const socket = useSocket();
-  const [listOfMessages, setListOfMessages] =
-    useState<MessageWithUser[]>(data.post!.messages) ||
-    ([] as MessageWithUser[]);
+  const postId = data.post?.id;
+  const [listOfMessages, setListOfMessages] = useState<MessageWithUser[]>(
+    data.post?.messages ?? []
+  );
   const [syncTimer, setSyncTimer] = useState<number | null>(INITIAL_SYNC_TIMER);
   const [pageLoadTime, setPageLoadTime] = useState(new Date());
   const [unreadMessages, setUnreadMessages] = useState<MessageWithUser[]>([]);
@@ -261,18 +262,14 @@ export default function PostPage() {
   };
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !postId) return;
 
-    if (data.post) {
-      socket.emit("joinPage", data.post.id);
-    }
+    socket.emit("joinPage", postId);
 
-    const handleReconnect = () => {
-      if (data.post) socket.emit("joinPage", data.post.id);
-    };
+    const handleReconnect = () => socket.emit("joinPage", postId);
     socket.io.on("reconnect", handleReconnect);
 
-    socket.on("messagePosted", (newMessage: MessageWithUser) => {
+    const onMessagePosted = (newMessage: MessageWithUser) => {
       if (!newMessage) return;
       // Use ref so this handler never needs listOfMessages in the effect deps,
       // avoiding full listener teardown on every received message.
@@ -291,9 +288,9 @@ export default function PostPage() {
         return messages;
       });
       setListOfMessages((messages) => [newMessage, ...messages]);
-    });
+    };
 
-    socket.on("messageEdited", (editedMessage: MessageWithUser) => {
+    const onMessageEdited = (editedMessage: MessageWithUser) => {
       if (!editedMessage) return;
       setListOfMessages((messages) => {
         const idx = messages.findIndex(m => m?.id === editedMessage.id);
@@ -304,22 +301,23 @@ export default function PostPage() {
         updated[idx] = { ...existing, text: editedMessage.text };
         return updated;
       });
-    });
+    };
 
-    socket.on("likePosted", (newLike: LikeWithUser) => {
+    const onLikePosted = (newLike: LikeWithUser) => {
       if (!newLike) return;
       setListOfMessages((messages) => {
         const idx = messages.findIndex(m => m?.id === newLike.messageId);
         if (idx === -1) return messages;
         const existing = messages[idx];
         if (!existing) return messages;
+        if (existing.likes.some(l => l.id === newLike.id)) return messages;
         const updated = [...messages];
         updated[idx] = { ...existing, likes: [...existing.likes, newLike] };
         return updated;
       });
-    });
+    };
 
-    socket.on("unlikePosted", (newUnlike: LikeWithUser) => {
+    const onUnlikePosted = (newUnlike: LikeWithUser) => {
       if (!newUnlike) return;
       setListOfMessages((messages) => {
         const idx = messages.findIndex(m => m?.id === newUnlike.messageId);
@@ -330,23 +328,33 @@ export default function PostPage() {
         updated[idx] = { ...existing, likes: existing.likes.filter(l => l.id !== newUnlike.id) };
         return updated;
       });
-    });
+    };
 
     // Use functional updater so syncTimer doesn't need to be in the effect deps.
-    socket.on("outOfSync", () => {
+    const onOutOfSync = () => {
       setSyncTimer((current) => {
         if (current === INITIAL_SYNC_TIMER) return SECOND_SYNC_TIMER;
         if (current === SECOND_SYNC_TIMER) return THIRD_SYNC_TIMER;
         return null;
       });
-    });
+    };
+
+    socket.on("messagePosted", onMessagePosted);
+    socket.on("messageEdited", onMessageEdited);
+    socket.on("likePosted", onLikePosted);
+    socket.on("unlikePosted", onUnlikePosted);
+    socket.on("outOfSync", onOutOfSync);
 
     return () => {
-      socket.removeAllListeners();
+      socket.off("messagePosted", onMessagePosted);
+      socket.off("messageEdited", onMessageEdited);
+      socket.off("likePosted", onLikePosted);
+      socket.off("unlikePosted", onUnlikePosted);
+      socket.off("outOfSync", onOutOfSync);
       socket.io.off("reconnect", handleReconnect);
-      socket.emit("leavePage", data.post?.id);
+      socket.emit("leavePage", postId);
     };
-  }, [socket, data, setListOfMessages]);
+  }, [socket, postId]);
 
   useEffect(() => {
     if (!data.post) return;
@@ -356,7 +364,7 @@ export default function PostPage() {
     // (e.g. messages that were rejected or deleted before the next loader refresh).
     setListOfMessages(serverMessages);
     setUnreadMessages((prev) => prev.filter((m) => m?.id && serverIds.has(m.id)));
-  }, [data, setListOfMessages]);
+  }, [data]);
 
   const messageDisplay =
     listOfMessages.length > 0 ? listOfMessages : data.post?.messages ?? [];
@@ -403,9 +411,9 @@ export default function PostPage() {
             viewBox="0 0 24 24"
           >
             <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
               d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
