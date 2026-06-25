@@ -285,8 +285,14 @@ export default function PostPage() {
     const handleConnect = () => setConnectionStatus("connected");
     const handleDisconnect = () => setConnectionStatus("disconnected");
     const handleReconnectAttempt = () => setConnectionStatus("reconnecting");
+    // connect_error fires when the socket can't establish a connection in the
+    // first place (e.g. the page loaded over HTTP but the WS never came up).
+    // Without this, a cold failure would leave the optimistic "connected"
+    // status in place and show no notice.
+    const handleConnectError = () => setConnectionStatus("reconnecting");
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
     socket.io.on("reconnect_attempt", handleReconnectAttempt);
     socket.io.on("reconnect", handleConnect);
 
@@ -373,6 +379,7 @@ export default function PostPage() {
       socket.io.off("reconnect", handleReconnect);
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleConnectError);
       socket.io.off("reconnect_attempt", handleReconnectAttempt);
       socket.io.off("reconnect", handleConnect);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -428,7 +435,7 @@ export default function PostPage() {
       <MessageForm id={data.post.id} />
       {connectionStatus !== "connected" && (
         <div className="alert alert-warning mt-4 justify-start">
-          <span className="loading loading-spinner loading-sm" />
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
           <span>You're disconnected — trying to reconnect…</span>
         </div>
       )}
