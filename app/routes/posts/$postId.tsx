@@ -18,9 +18,7 @@ import { useSocket } from "~/context";
 import type { Like, LikeWithUser } from "~/models/like.server";
 import { deleteLike, findLikeByUserAndMessage , createLike } from "~/models/like.server";
 
-const INITIAL_SYNC_TIMER = 60000;
-const SECOND_SYNC_TIMER = 10000;
-const THIRD_SYNC_TIMER = 5000;
+type ConnectionStatus = "connected" | "disconnected" | "reconnecting";
 
 type LoaderData = {
   post: PostWithMessages;
@@ -211,7 +209,8 @@ export default function PostPage() {
   const [listOfMessages, setListOfMessages] = useState<MessageWithUser[]>(
     data.post?.messages ?? []
   );
-  const [syncTimer, setSyncTimer] = useState<number | null>(INITIAL_SYNC_TIMER);
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus>("connected");
   const [pageLoadTime, setPageLoadTime] = useState(new Date());
   const [unreadMessages, setUnreadMessages] = useState<MessageWithUser[]>([]);
 
@@ -266,8 +265,39 @@ export default function PostPage() {
 
     socket.emit("joinPage", postId);
 
-    const handleReconnect = () => socket.emit("joinPage", postId);
+    // Ask the server to replay any messages newer than the newest one we already
+    // have, so we recover anything broadcast while we were disconnected. The list
+    // is ordered createdAt desc, so index 0 is the newest message we know about.
+    const requestCatchUp = () => {
+      const newest = listOfMessagesRef.current[0]?.createdAt;
+      socket.emit("catchUp", {
+        postId,
+        lastMessageTimestamp: newest ?? null,
+      });
+    };
+
+    const handleReconnect = () => {
+      socket.emit("joinPage", postId);
+      requestCatchUp();
+    };
     socket.io.on("reconnect", handleReconnect);
+
+    const handleConnect = () => setConnectionStatus("connected");
+    const handleDisconnect = () => setConnectionStatus("disconnected");
+    const handleReconnectAttempt = () => setConnectionStatus("reconnecting");
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.io.on("reconnect_attempt", handleReconnectAttempt);
+    socket.io.on("reconnect", handleConnect);
+
+    // Catch up when the tab is refocused even if the socket never fully dropped —
+    // covers broadcasts missed during sleep without a clean disconnect.
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && socket.connected) {
+        requestCatchUp();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const onMessagePosted = (newMessage: MessageWithUser) => {
       if (!newMessage) return;
@@ -330,28 +360,22 @@ export default function PostPage() {
       });
     };
 
-    // Use functional updater so syncTimer doesn't need to be in the effect deps.
-    const onOutOfSync = () => {
-      setSyncTimer((current) => {
-        if (current === INITIAL_SYNC_TIMER) return SECOND_SYNC_TIMER;
-        if (current === SECOND_SYNC_TIMER) return THIRD_SYNC_TIMER;
-        return null;
-      });
-    };
-
     socket.on("messagePosted", onMessagePosted);
     socket.on("messageEdited", onMessageEdited);
     socket.on("likePosted", onLikePosted);
     socket.on("unlikePosted", onUnlikePosted);
-    socket.on("outOfSync", onOutOfSync);
 
     return () => {
       socket.off("messagePosted", onMessagePosted);
       socket.off("messageEdited", onMessageEdited);
       socket.off("likePosted", onLikePosted);
       socket.off("unlikePosted", onUnlikePosted);
-      socket.off("outOfSync", onOutOfSync);
       socket.io.off("reconnect", handleReconnect);
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.io.off("reconnect_attempt", handleReconnectAttempt);
+      socket.io.off("reconnect", handleConnect);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       socket.emit("leavePage", postId);
     };
   }, [socket, postId]);
@@ -402,22 +426,10 @@ export default function PostPage() {
       </aside>
       <img src={data.post.gif} alt={data.post.title} className="mb-4" />
       <MessageForm id={data.post.id} />
-      {!syncTimer && (
-        <div className="alert alert-error mt-4 justify-start">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 flex-shrink-0 stroke-current"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>You have lost your connection. Please refresh the page.</span>
+      {connectionStatus !== "connected" && (
+        <div className="alert alert-warning mt-4 justify-start">
+          <span className="loading loading-spinner loading-sm" />
+          <span>You're disconnected — trying to reconnect…</span>
         </div>
       )}
       <div className="pt-8">

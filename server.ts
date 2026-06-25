@@ -33,14 +33,34 @@ io.on("connection", (socket) => {
     socket.leave(postId);
   });
 
-  socket.on("ping", async ({ numberOfMessagesInList, postId }) => {
-    const numberOfActualMessages = await prisma.message.count({
+  socket.on("catchUp", async ({ postId, lastMessageTimestamp }) => {
+    if (!postId) return;
+
+    const messages = await prisma.message.findMany({
       where: {
         postId,
+        // gte (not gt) so a message sharing the exact timestamp of our newest
+        // known message isn't skipped; the client dedups by id anyway.
+        ...(lastMessageTimestamp
+          ? { createdAt: { gte: new Date(lastMessageTimestamp) } }
+          : {}),
+      },
+      // Ascending so each prepended message ends up in the correct (desc) order
+      // on the client, which prepends every "messagePosted" it receives.
+      orderBy: { createdAt: "asc" },
+      include: {
+        user: true,
+        likes: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
-    if (numberOfActualMessages !== numberOfMessagesInList)
-      socket.emit("outOfSync", true);
+
+    for (const message of messages) {
+      socket.emit("messagePosted", message);
+    }
   });
 
   socket.on("messagePosted", async (message: Message) => {
