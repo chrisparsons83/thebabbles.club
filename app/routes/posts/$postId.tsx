@@ -366,16 +366,34 @@ export default function PostPage() {
       });
     };
 
+    // Reconcile likes from a catch-up snapshot: rebuild every known message's
+    // likes array from the authoritative set the server sent. This recovers
+    // both reactions added and reactions removed while we were disconnected.
+    const onLikesCatchUp = (likes: LikeWithUser[]) => {
+      if (!likes) return;
+      const byMessage = new Map<string, LikeWithUser[]>();
+      for (const like of likes) {
+        const arr = byMessage.get(like.messageId) ?? [];
+        arr.push(like);
+        byMessage.set(like.messageId, arr);
+      }
+      setListOfMessages((messages) =>
+        messages.map((m) => (m ? { ...m, likes: byMessage.get(m.id) ?? [] } : m))
+      );
+    };
+
     socket.on("messagePosted", onMessagePosted);
     socket.on("messageEdited", onMessageEdited);
     socket.on("likePosted", onLikePosted);
     socket.on("unlikePosted", onUnlikePosted);
+    socket.on("likesCatchUp", onLikesCatchUp);
 
     return () => {
       socket.off("messagePosted", onMessagePosted);
       socket.off("messageEdited", onMessageEdited);
       socket.off("likePosted", onLikePosted);
       socket.off("unlikePosted", onUnlikePosted);
+      socket.off("likesCatchUp", onLikesCatchUp);
       socket.io.off("reconnect", handleReconnect);
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);

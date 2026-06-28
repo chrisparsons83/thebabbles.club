@@ -61,6 +61,16 @@ io.on("connection", (socket) => {
     for (const message of messages) {
       socket.emit("messagePosted", message);
     }
+
+    // Likes have no timestamp and an unlike is a row deletion, so we can't
+    // "replay newer" likes the way we replay messages. Instead send the post's
+    // current likes as a snapshot and let the client reconcile each message's
+    // likes array, recovering both reactions added and removed while away.
+    const likes = await prisma.like.findMany({
+      where: { message: { postId } },
+      include: { user: true },
+    });
+    socket.emit("likesCatchUp", likes);
   });
 
   socket.on("messagePosted", async (message: Message) => {
