@@ -250,7 +250,7 @@ function MessageComponent({
                 pageLoadTime={pageLoadTime}
                 cloudName={cloudName}
                 handleReadMessage={handleReadMessage}
-                wrapperClassName="pl-1"
+                wrapperClassName="ml-1"
                 key={message!.id}
               />
             )

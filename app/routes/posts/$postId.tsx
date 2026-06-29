@@ -377,6 +377,7 @@ export default function PostPage() {
       likes: LikeWithUser[];
     }) => {
       if (incomingPostId !== postId) return;
+      if (!likes) return;
       const likesByMessage = new Map<string, LikeWithUser[]>();
       for (const like of likes) {
         if (!like) continue;
@@ -385,9 +386,18 @@ export default function PostPage() {
         likesByMessage.set(like.messageId, existing);
       }
       setListOfMessages((messages) =>
-        messages.map((m) =>
-          m ? { ...m, likes: likesByMessage.get(m.id) ?? [] } : m
-        )
+        messages.map((m) => {
+          if (!m) return m;
+          const nextLikes = likesByMessage.get(m.id) ?? [];
+          // Preserve the existing reference when the like set is unchanged so
+          // the memoized MessageComponents don't all re-render on every
+          // reconnect/refocus (the comparator keys off message identity).
+          if (m.likes.length === nextLikes.length) {
+            const nextIds = new Set(nextLikes.map((l) => l.id));
+            if (m.likes.every((l) => nextIds.has(l.id))) return m;
+          }
+          return { ...m, likes: nextLikes };
+        })
       );
     };
 
