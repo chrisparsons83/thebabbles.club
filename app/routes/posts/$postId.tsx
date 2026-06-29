@@ -366,16 +366,43 @@ export default function PostPage() {
       });
     };
 
+    // Authoritative like reconciliation sent by the server in response to
+    // catchUp. Replaces every message's likes from the full set so we recover
+    // likes/unlikes (on any message, old or new) missed while disconnected.
+    const onLikesSync = ({
+      postId: incomingPostId,
+      likes,
+    }: {
+      postId: string;
+      likes: LikeWithUser[];
+    }) => {
+      if (incomingPostId !== postId) return;
+      const likesByMessage = new Map<string, LikeWithUser[]>();
+      for (const like of likes) {
+        if (!like) continue;
+        const existing = likesByMessage.get(like.messageId) ?? [];
+        existing.push(like);
+        likesByMessage.set(like.messageId, existing);
+      }
+      setListOfMessages((messages) =>
+        messages.map((m) =>
+          m ? { ...m, likes: likesByMessage.get(m.id) ?? [] } : m
+        )
+      );
+    };
+
     socket.on("messagePosted", onMessagePosted);
     socket.on("messageEdited", onMessageEdited);
     socket.on("likePosted", onLikePosted);
     socket.on("unlikePosted", onUnlikePosted);
+    socket.on("likesSync", onLikesSync);
 
     return () => {
       socket.off("messagePosted", onMessagePosted);
       socket.off("messageEdited", onMessageEdited);
       socket.off("likePosted", onLikePosted);
       socket.off("unlikePosted", onUnlikePosted);
+      socket.off("likesSync", onLikesSync);
       socket.io.off("reconnect", handleReconnect);
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
