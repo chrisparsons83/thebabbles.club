@@ -378,7 +378,7 @@ export default function PostPage() {
     }) => {
       if (incomingPostId !== postId) return;
       if (!likes) return;
-      const likesByMessage = new Map<string, LikeWithUser[]>();
+      const likesByMessage = new Map<string, NonNullable<LikeWithUser>[]>();
       for (const like of likes) {
         if (!like) continue;
         const existing = likesByMessage.get(like.messageId) ?? [];
