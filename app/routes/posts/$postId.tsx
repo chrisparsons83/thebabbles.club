@@ -219,6 +219,11 @@ export default function PostPage() {
   const listOfMessagesRef = useRef(listOfMessages);
   listOfMessagesRef.current = listOfMessages;
 
+  // Ids of likes we've seen removed via unlikePosted. Like ids are immutable
+  // cuids that never reappear, so a catch-up snapshot must never re-add one —
+  // this stops a snapshot read before the removal from resurrecting the like.
+  const deletedLikeIdsRef = useRef<Set<string>>(new Set());
+
   const handleClearMessages = () => {
     setPageLoadTime(() => new Date());
     setUnreadMessages([]);
@@ -355,6 +360,7 @@ export default function PostPage() {
 
     const onUnlikePosted = (newUnlike: LikeWithUser) => {
       if (!newUnlike) return;
+      deletedLikeIdsRef.current.add(newUnlike.id);
       setListOfMessages((messages) => {
         const idx = messages.findIndex(m => m?.id === newUnlike.messageId);
         if (idx === -1) return messages;
@@ -366,20 +372,53 @@ export default function PostPage() {
       });
     };
 
-    // Reconcile likes from a catch-up snapshot: rebuild every known message's
-    // likes array from the authoritative set the server sent. This recovers
-    // both reactions added and reactions removed while we were disconnected.
-    const onLikesCatchUp = (likes: LikeWithUser[]) => {
+    // Reconcile likes from a catch-up snapshot: rebuild each known message's
+    // likes from the authoritative set the server sent, recovering reactions
+    // added and removed while we were disconnected. The snapshot is `as of`
+    // snapshotTime, so we keep any like already on the message that was added
+    // live after that (createdAt > snapshotTime) and never re-add a like we've
+    // since seen removed. We reuse the existing message object whenever its
+    // like set is unchanged so memoized rows don't re-render on every refocus.
+    const onLikesCatchUp = ({
+      likes,
+      snapshotTime,
+    }: {
+      likes: LikeWithUser[];
+      snapshotTime: string | Date;
+    }) => {
       if (!likes) return;
+      const cutoff = new Date(snapshotTime).getTime();
       const byMessage = new Map<string, LikeWithUser[]>();
       for (const like of likes) {
+        if (deletedLikeIdsRef.current.has(like.id)) continue;
         const arr = byMessage.get(like.messageId) ?? [];
         arr.push(like);
         byMessage.set(like.messageId, arr);
       }
-      setListOfMessages((messages) =>
-        messages.map((m) => (m ? { ...m, likes: byMessage.get(m.id) ?? [] } : m))
-      );
+      setListOfMessages((messages) => {
+        let changed = false;
+        const next = messages.map((m) => {
+          if (!m) return m;
+          const snapshot = byMessage.get(m.id) ?? [];
+          const snapshotIds = new Set(snapshot.map((l) => l.id));
+          // Preserve likes added live after the snapshot was taken; the older
+          // snapshot legitimately doesn't know about them yet.
+          const lateAdds = m.likes.filter(
+            (l: LikeWithUser) =>
+              !snapshotIds.has(l.id) &&
+              new Date(l.createdAt).getTime() > cutoff
+          );
+          const merged = lateAdds.length ? [...snapshot, ...lateAdds] : snapshot;
+          const currentIds = new Set(m.likes.map((l: LikeWithUser) => l.id));
+          const unchanged =
+            merged.length === currentIds.size &&
+            merged.every((l) => currentIds.has(l.id));
+          if (unchanged) return m;
+          changed = true;
+          return { ...m, likes: merged };
+        });
+        return changed ? next : messages;
+      });
     };
 
     socket.on("messagePosted", onMessagePosted);

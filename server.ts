@@ -62,15 +62,20 @@ io.on("connection", (socket) => {
       socket.emit("messagePosted", message);
     }
 
-    // Likes have no timestamp and an unlike is a row deletion, so we can't
-    // "replay newer" likes the way we replay messages. Instead send the post's
-    // current likes as a snapshot and let the client reconcile each message's
-    // likes array, recovering both reactions added and removed while away.
+    // An unlike is a row deletion with no tombstone to replay, so we send the
+    // post's current likes as a snapshot and let the client reconcile each
+    // message's likes array, recovering both reactions added and removed while
+    // away. The snapshot races with live likePosted/unlikePosted broadcasts, so
+    // we stamp it with a DB-clock timestamp captured *before* the read: every
+    // like in the snapshot then has createdAt <= snapshotTime, letting the
+    // client tell a genuine late add (createdAt > snapshotTime, keep) from a
+    // reaction the snapshot intentionally omits (removed while away, drop).
+    const [{ now: snapshotTime }] = await prisma.$queryRaw<{ now: Date }[]>`SELECT now()`;
     const likes = await prisma.like.findMany({
       where: { message: { postId } },
       include: { user: true },
     });
-    socket.emit("likesCatchUp", likes);
+    socket.emit("likesCatchUp", { likes, snapshotTime });
   });
 
   socket.on("messagePosted", async (message: Message) => {
