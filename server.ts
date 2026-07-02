@@ -61,6 +61,17 @@ io.on("connection", (socket) => {
     for (const message of messages) {
       socket.emit("messagePosted", message);
     }
+
+    // Likes have no timestamp and unlikes are row deletes, so missed like
+    // activity can't be replayed incrementally the way messages are. Instead we
+    // send the authoritative set of all likes for the post and let the client
+    // reconcile, which recovers both likes added to old messages and unlikes
+    // that happened while this client was disconnected.
+    const likes = await prisma.like.findMany({
+      where: { message: { postId } },
+      include: { user: true },
+    });
+    socket.emit("likesSync", { postId, likes });
   });
 
   socket.on("messagePosted", async (message: Message) => {

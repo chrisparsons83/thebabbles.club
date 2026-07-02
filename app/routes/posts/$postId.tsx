@@ -366,16 +366,53 @@ export default function PostPage() {
       });
     };
 
+    // Authoritative like reconciliation sent by the server in response to
+    // catchUp. Replaces every message's likes from the full set so we recover
+    // likes/unlikes (on any message, old or new) missed while disconnected.
+    const onLikesSync = ({
+      postId: incomingPostId,
+      likes,
+    }: {
+      postId: string;
+      likes: LikeWithUser[];
+    }) => {
+      if (incomingPostId !== postId) return;
+      if (!likes) return;
+      const likesByMessage = new Map<string, NonNullable<LikeWithUser>[]>();
+      for (const like of likes) {
+        if (!like) continue;
+        const existing = likesByMessage.get(like.messageId) ?? [];
+        existing.push(like);
+        likesByMessage.set(like.messageId, existing);
+      }
+      setListOfMessages((messages) =>
+        messages.map((m) => {
+          if (!m) return m;
+          const nextLikes = likesByMessage.get(m.id) ?? [];
+          // Preserve the existing reference when the like set is unchanged so
+          // the memoized MessageComponents don't all re-render on every
+          // reconnect/refocus (the comparator keys off message identity).
+          if (m.likes.length === nextLikes.length) {
+            const nextIds = new Set(nextLikes.map((l) => l.id));
+            if (m.likes.every((l) => nextIds.has(l.id))) return m;
+          }
+          return { ...m, likes: nextLikes };
+        })
+      );
+    };
+
     socket.on("messagePosted", onMessagePosted);
     socket.on("messageEdited", onMessageEdited);
     socket.on("likePosted", onLikePosted);
     socket.on("unlikePosted", onUnlikePosted);
+    socket.on("likesSync", onLikesSync);
 
     return () => {
       socket.off("messagePosted", onMessagePosted);
       socket.off("messageEdited", onMessageEdited);
       socket.off("likePosted", onLikePosted);
       socket.off("unlikePosted", onUnlikePosted);
+      socket.off("likesSync", onLikesSync);
       socket.io.off("reconnect", handleReconnect);
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);

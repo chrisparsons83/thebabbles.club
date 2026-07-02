@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import parse from "html-react-parser";
+import type { CSSProperties } from "react";
 import { memo, useEffect, useState } from "react";
 import ReactTimeAgo from "react-time-ago";
 import { useBabblesContext } from "~/babblesContext";
@@ -20,7 +21,23 @@ type Props = {
   pageLoadTime: Date;
   cloudName?: string;
   handleReadMessage: (message: MessageWithUser) => void;
+  // Extra classes for the root wrapper. Used by parents to push nested-reply
+  // indentation onto the child's own root, avoiding an extra wrapper div per
+  // reply. Constant per render position, so it is safe to omit from the memo
+  // comparator below.
+  wrapperClassName?: string;
 };
+
+// Let the browser skip layout + paint for off-screen top-level comments while
+// keeping them in the DOM (find-in-page, anchor links, and scroll all keep
+// working). The intrinsic size is only a scrollbar estimate, not a layout
+// constraint on visible comments. Module-level constant so the object reference
+// is stable across renders.
+// Cast because containIntrinsicSize isn't in this csstype version's typings yet.
+const TOP_LEVEL_VISIBILITY_STYLE = {
+  contentVisibility: "auto",
+  containIntrinsicSize: "auto 320px",
+} as CSSProperties;
 
 function getAvatarCloudinaryId(url: string | null) {
   if (!url) return null;
@@ -73,6 +90,7 @@ function MessageComponent({
   pageLoadTime,
   cloudName,
   handleReadMessage,
+  wrapperClassName,
 }: Props) {
   const newerThanInitialLoad = new Date(message.createdAt) > pageLoadTime;
   const [showMessageForm, setShowMessageForm] = useState(false);
@@ -122,6 +140,7 @@ function MessageComponent({
   return (
     <div id={`message-${message.id}`}
       className={clsx(
+        wrapperClassName,
         borderTheme,
         "border-l-4",
         "lg:border-l-8",
@@ -130,6 +149,7 @@ function MessageComponent({
         hasNotBeenViewed ? ["bg-slate-300", "dark:bg-primary"] : "",
         "duration-500"
       )}
+      style={depth === 0 ? TOP_LEVEL_VISIBILITY_STYLE : undefined}
       onMouseOver={handleMouseover}
     >
       <div className="border-b border-secondary px-4 pb-4">
@@ -162,79 +182,77 @@ function MessageComponent({
             </span>
           </div>
         </div>
-        <div>
-          <div className="my-6 break-words">
-            {parse(formattedMessage, replaceOptions)}
-          </div>
-          <div className="">
-            {imagesToDisplay.map((image) => (
-              <ImagePreview
-                image={image}
-                key={image}
-                showOnInitialLoad={newerThanInitialLoad}
-              />
-            ))}
-          </div>
-          {twitterId && (
-            <TwitterEmbed
-              twitterId={twitterId}
-              showOnInitialLoad={newerThanInitialLoad}
-            />
-          )}
-          {threadsUrl && (
-            <ThreadsEmbed
-              threadsUrl={threadsUrl}
-              showOnInitialLoad={newerThanInitialLoad}
-            />
-          )}
-          <div className="mt-4 flex gap-0.5">
-            {depth < 8 && (
-              <button
-                onClick={toggleForm}
-                className="btn btn-secondary btn-sm flex-none"
-                disabled={showEditForm}
-              >
-                Reply
-              </button>
-            )}
-            {isWrittenByCurrentUser && (
-              <button
-                onClick={toggleEditForm}
-                className="btn btn-secondary btn-sm flex-none"
-                disabled={showMessageForm && !showEditForm}
-              >
-                Edit
-              </button>
-            )}
-            <LikeButton message={message} emoji="👍" />
-            <LikeButton message={message} emoji="👎" />
-          </div>
-
-          {message && showMessageForm && (
-            <MessageForm
-              id={message.postId}
-              parentId={message.id}
-              toggleForm={resetButtons}
-              existingMessage={showEditForm ? message : undefined}
-            />
-          )}
+        <div className="my-6 break-words">
+          {parse(formattedMessage, replaceOptions)}
         </div>
+        <div className="">
+          {imagesToDisplay.map((image) => (
+            <ImagePreview
+              image={image}
+              key={image}
+              showOnInitialLoad={newerThanInitialLoad}
+            />
+          ))}
+        </div>
+        {twitterId && (
+          <TwitterEmbed
+            twitterId={twitterId}
+            showOnInitialLoad={newerThanInitialLoad}
+          />
+        )}
+        {threadsUrl && (
+          <ThreadsEmbed
+            threadsUrl={threadsUrl}
+            showOnInitialLoad={newerThanInitialLoad}
+          />
+        )}
+        <div className="mt-4 flex gap-0.5">
+          {depth < 8 && (
+            <button
+              onClick={toggleForm}
+              className="btn btn-secondary btn-sm flex-none"
+              disabled={showEditForm}
+            >
+              Reply
+            </button>
+          )}
+          {isWrittenByCurrentUser && (
+            <button
+              onClick={toggleEditForm}
+              className="btn btn-secondary btn-sm flex-none"
+              disabled={showMessageForm && !showEditForm}
+            >
+              Edit
+            </button>
+          )}
+          <LikeButton message={message} emoji="👍" />
+          <LikeButton message={message} emoji="👎" />
+        </div>
+
+        {message && showMessageForm && (
+          <MessageForm
+            id={message.postId}
+            parentId={message.id}
+            toggleForm={resetButtons}
+            existingMessage={showEditForm ? message : undefined}
+          />
+        )}
       </div>
       {childMessages &&
         childMessages.length > 0 &&
         childMessages.map(
           (message) =>
             message && (
-              <div className={clsx("pl-1")} key={message!.id}>
-                <MessageComponent
-                  message={message}
-                  depth={depth + 1}
-                  childrenMap={childrenMap}
-                  pageLoadTime={pageLoadTime}
-                  cloudName={cloudName}
-                  handleReadMessage={handleReadMessage}
-                />
-              </div>
+              <MessageComponent
+                message={message}
+                depth={depth + 1}
+                childrenMap={childrenMap}
+                pageLoadTime={pageLoadTime}
+                cloudName={cloudName}
+                handleReadMessage={handleReadMessage}
+                wrapperClassName="ml-1"
+                key={message!.id}
+              />
             )
         )}
     </div>
