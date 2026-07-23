@@ -33,13 +33,6 @@ type LoaderData = {
   inactiveUsers: User[];
 };
 
-async function validateUserId(userId: string) {
-  const user = await getUserById(userId);
-  if (!user) {
-    return "User not found";
-  }
-}
-
 export const action: ActionFunction = async ({ request }) => {
   await requireActiveUser(request);
   const formData = await request.formData();
@@ -69,15 +62,14 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const errors = {
-    userId: await validateUserId(userId),
-  };
-  const fields = { action, userId };
-  if (Object.values(errors).some(Boolean)) {
-    return json<ActionData>({ errors, fields }, { status: 400 });
-  }
-
   const user = await getUserById(userId);
+
+  if (!user) {
+    return json<ActionData>(
+      { errors: { userId: "User not found" }, fields: { action, userId } },
+      { status: 400 }
+    );
+  }
 
   switch (action) {
     case "deactivate": {
@@ -89,14 +81,24 @@ export const action: ActionFunction = async ({ request }) => {
       break;
     }
     case "delete": {
-      await deleteUser(userId);
+      if (user.isActive) {
+        return json<ActionData>(
+          { formError: "Only pending users can be deleted." },
+          { status: 400 }
+        );
+      }
+      try {
+        await deleteUser(userId);
+      } catch {
+        // User was already removed (e.g. a concurrent delete); nothing to do.
+      }
       return json<ActionData>({
-        response: `${user?.username} was deleted.`,
+        response: `${user.username} was deleted.`,
       });
     }
   }
 
-  const response = `${user?.username} was updated.`;
+  const response = `${user.username} was updated.`;
 
   return json<ActionData>({ response });
 };
