@@ -17,7 +17,7 @@ type ActionData = {
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  await requireActiveUser(request);
+  const currentUser = await requireActiveUser(request);
 
   const uploadHandler = unstable_composeUploadHandlers(
     async ({ name, data, filename }) => {
@@ -38,14 +38,12 @@ export const action: ActionFunction = async ({ request }) => {
     uploadHandler
   );
 
-  const id = formData.get("id");
   const email = formData.get("email");
   const password = formData.get("password");
   const confirmPassword = formData.get("confirmPassword");
   const avatar = formData.get("avatar");
 
   if (
-    typeof id !== "string" ||
     typeof email !== "string" ||
     typeof password !== "string" ||
     typeof confirmPassword !== "string"
@@ -55,6 +53,10 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (password !== confirmPassword) {
     return json<ActionData>({ error: "Passwords do not match." });
+  }
+
+  if (password.length > 0 && password.length < 8) {
+    return json<ActionData>({ error: "Password is too short." });
   }
 
   const fieldsToUpdate: UpdateUserData = {};
@@ -71,7 +73,7 @@ export const action: ActionFunction = async ({ request }) => {
     fieldsToUpdate.password = password;
   }
 
-  await updateUser(id, fieldsToUpdate);
+  await updateUser(currentUser.id, fieldsToUpdate);
 
   return json<ActionData>({ response: "The user has been updated." });
 };
@@ -85,7 +87,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function UserEditPath() {
-  const { username, email, id } = useLoaderData<User>();
+  const { username, email } = useLoaderData<User>();
   const actionData = useActionData() as ActionData;
 
   const error = actionData?.error;
@@ -97,7 +99,6 @@ export default function UserEditPath() {
       {response && <div className="alert alert-success mb-4">{response}</div>}
       {error && <div className="alert alert-error mb-4">{error}</div>}
       <Form method="post" className="space-y-6" encType="multipart/form-data">
-        <input type="hidden" name="id" defaultValue={id} />
         <div>
           <label>Email Address</label>
           <div className="mt-1">
