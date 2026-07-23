@@ -5,8 +5,7 @@ import morgan from "morgan";
 import { createRequestHandler } from "@remix-run/express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import type { Like, Message } from "@prisma/client";
-import { PrismaClient } from "@prisma/client";
+import type { Like, Message, PrismaClient } from "@prisma/client";
 import type { LikeWithUser } from "~/models/like.server";
 
 const app = express();
@@ -14,7 +13,25 @@ const app = express();
 // You need to create the HTTP server from the Express app
 const httpServer = createServer(app);
 
-const prisma = new PrismaClient();
+// Reuse the single PrismaClient owned by app/db.server.ts instead of creating a
+// second one here. This file and db.server.ts are transpiled into separate
+// bundles that can't import each other at runtime, so we reach the shared
+// instance through the `global.__db__` singleton db.server.ts populates (its
+// ambient `declare global` is visible here project-wide). db.server.ts runs at
+// startup via `require(BUILD_DIR)` — at module load in production and in the
+// listen() callback in development — both of which happen before any socket
+// connection (a socket only opens after a page has loaded over HTTP), so the
+// client is always initialized by the time these handlers run. A second
+// independent client would open its own pool and starve the Remix loaders,
+// which is what caused the P2024 connection-pool timeouts.
+function getPrisma(): PrismaClient {
+  if (!global.__db__) {
+    throw new Error(
+      "Prisma client is not initialized. app/db.server.ts (bundled into the Remix build) must be loaded before the Socket.IO handlers run a query."
+    );
+  }
+  return global.__db__;
+}
 
 // And then attach the socket.io server to the HTTP server
 const io = new Server(httpServer);
@@ -36,6 +53,7 @@ io.on("connection", (socket) => {
   socket.on("catchUp", async ({ postId, lastMessageTimestamp }) => {
     if (!postId) return;
 
+    const prisma = getPrisma();
     const messages = await prisma.message.findMany({
       where: {
         postId,
@@ -77,6 +95,7 @@ io.on("connection", (socket) => {
   socket.on("messagePosted", async (message: Message) => {
     if (!message) return;
 
+    const prisma = getPrisma();
     const messageWithUser = await prisma.message.findFirst({
       where: { id: message.id },
       include: {
@@ -94,6 +113,7 @@ io.on("connection", (socket) => {
   socket.on("messageEdited", async (message: Message) => {
     if (!message) return;
 
+    const prisma = getPrisma();
     const messageWithUser = await prisma.message.findFirst({
       where: { id: message.id },
       include: {
@@ -111,6 +131,7 @@ io.on("connection", (socket) => {
   socket.on("likePosted", async (like: Like) => {
     const { id } = like;
 
+    const prisma = getPrisma();
     const fullLike = await prisma.like.findFirst({
       where: { id },
       include: {
