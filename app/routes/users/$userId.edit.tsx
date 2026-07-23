@@ -1,9 +1,10 @@
-import type {
-  ActionFunction,
-  LoaderFunction,
-  UploadHandler,
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import {
+  json,
+  unstable_composeUploadHandlers,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData,
 } from "@remix-run/node";
-import { json, unstable_parseMultipartFormData } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { hasSecureUrl, uploadImage } from "~/cloudinary.server";
 import type { UpdateUserData, User } from "~/models/user.server";
@@ -18,15 +19,19 @@ type ActionData = {
 export const action: ActionFunction = async ({ request }) => {
   await requireActiveUser(request);
 
-  const uploadHandler: UploadHandler = async ({ name, data, filename }) => {
-    if (name !== "avatar" || (name === "avatar" && !filename)) {
-      return undefined;
-    }
-    const uploadedImage = await uploadImage(data, "avatars").catch((err) =>
-      console.error(err)
-    );
-    return hasSecureUrl(uploadedImage) ? uploadedImage.secure_url : "";
-  };
+  const uploadHandler = unstable_composeUploadHandlers(
+    async ({ name, data, filename }) => {
+      if (name !== "avatar" || !filename) {
+        // Let the memory handler capture text fields (id/email/password/etc.)
+        return undefined;
+      }
+      const uploadedImage = await uploadImage(data, "avatars").catch((err) =>
+        console.error(err)
+      );
+      return hasSecureUrl(uploadedImage) ? uploadedImage.secure_url : "";
+    },
+    unstable_createMemoryUploadHandler()
+  );
 
   const formData = await unstable_parseMultipartFormData(
     request,
@@ -56,7 +61,7 @@ export const action: ActionFunction = async ({ request }) => {
   if (email) {
     fieldsToUpdate.email = email;
   }
-  if (typeof avatar === "string") {
+  if (typeof avatar === "string" && avatar.length > 0) {
     fieldsToUpdate.avatar = avatar.replace(
       "image/upload",
       "image/upload/c_fill,h_64,w_64,q_auto:best"
