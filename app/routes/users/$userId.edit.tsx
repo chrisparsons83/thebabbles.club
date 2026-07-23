@@ -22,7 +22,7 @@ export const action: ActionFunction = async ({ request }) => {
   const uploadHandler = unstable_composeUploadHandlers(
     async ({ name, data, filename }) => {
       if (name !== "avatar" || !filename) {
-        // Let the memory handler capture text fields (id/email/password/etc.)
+        // Let the memory handler capture text fields (email/password/etc.)
         return undefined;
       }
       const uploadedImage = await uploadImage(data, "avatars").catch((err) =>
