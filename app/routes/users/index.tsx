@@ -5,6 +5,8 @@ import type { User } from "~/models/user.server";
 import {
   activateUser,
   deactivateUser,
+  deleteInactiveUsers,
+  deleteUser,
   getActiveUsers,
   getInactiveUsers,
   getUserById,
@@ -42,9 +44,25 @@ export const action: ActionFunction = async ({ request }) => {
   await requireActiveUser(request);
   const formData = await request.formData();
   const action = formData.get("_action");
+
+  if (typeof action !== "string") {
+    return json<ActionData>(
+      { formError: "Form was not submitted correctly." },
+      { status: 400 }
+    );
+  }
+
+  if (action === "deleteAllPending") {
+    const { count } = await deleteInactiveUsers();
+    const response = `${count} pending ${
+      count === 1 ? "user was" : "users were"
+    } deleted.`;
+    return json<ActionData>({ response });
+  }
+
   const userId = formData.get("userId");
 
-  if (typeof action !== "string" || typeof userId !== "string") {
+  if (typeof userId !== "string") {
     return json<ActionData>(
       { formError: "Form was not submitted correctly." },
       { status: 400 }
@@ -59,6 +77,8 @@ export const action: ActionFunction = async ({ request }) => {
     return json<ActionData>({ errors, fields }, { status: 400 });
   }
 
+  const user = await getUserById(userId);
+
   switch (action) {
     case "deactivate": {
       await deactivateUser(userId);
@@ -68,9 +88,13 @@ export const action: ActionFunction = async ({ request }) => {
       await activateUser(userId);
       break;
     }
+    case "delete": {
+      await deleteUser(userId);
+      return json<ActionData>({
+        response: `${user?.username} was deleted.`,
+      });
+    }
   }
-
-  const user = await getUserById(userId);
 
   const response = `${user?.username} was updated.`;
 
@@ -151,7 +175,32 @@ export default function UserIndex() {
         </table>
       </div>
       <div>
-        <h1>Pending Users</h1>
+        <div className="flex items-center justify-between">
+          <h1>Pending Users</h1>
+          {inactiveUsers.length > 0 && (
+            <Form
+              method="post"
+              onSubmit={(event) => {
+                if (
+                  !window.confirm(
+                    "Delete all pending users? This cannot be undone."
+                  )
+                ) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              <button
+                className="btn btn-error"
+                type="submit"
+                name="_action"
+                value="deleteAllPending"
+              >
+                Clear All Pending
+              </button>
+            </Form>
+          )}
+        </div>
         <table className="table-zebra table w-full">
           <thead>
             <tr>
@@ -166,7 +215,7 @@ export default function UserIndex() {
                   <Link to={`${user.id}`}>{user.username}</Link>
                 </td>
                 <td className="text-right">
-                  <Form method="post">
+                  <Form className="inline" method="post">
                     <input type="hidden" name="userId" value={user.id} />
                     <button
                       className="btn btn-primary"
@@ -175,6 +224,29 @@ export default function UserIndex() {
                       value="activate"
                     >
                       Activate
+                    </button>
+                  </Form>
+                  <Form
+                    className="ml-4 inline"
+                    method="post"
+                    onSubmit={(event) => {
+                      if (
+                        !window.confirm(
+                          `Delete ${user.username}? This cannot be undone.`
+                        )
+                      ) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
+                    <input type="hidden" name="userId" value={user.id} />
+                    <button
+                      className="btn btn-error"
+                      type="submit"
+                      name="_action"
+                      value="delete"
+                    >
+                      Delete
                     </button>
                   </Form>
                 </td>
