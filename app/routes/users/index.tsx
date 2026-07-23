@@ -66,7 +66,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   if (!user) {
     return json<ActionData>(
-      { errors: { userId: "User not found" }, fields: { action, userId } },
+      { errors: { userId: "User not found" }, fields: { _action: action, userId } },
       { status: 400 }
     );
   }
