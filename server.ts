@@ -14,7 +14,44 @@ const app = express();
 // You need to create the HTTP server from the Express app
 const httpServer = createServer(app);
 
-const prisma = new PrismaClient();
+// Share ONE PrismaClient (and therefore one connection pool) across the whole
+// process. This file and app/db.server.ts are transpiled into separate bundles
+// that can't import from each other at runtime, so instead of instantiating a
+// second client here we go through the same `global.__db__` singleton that
+// db.server.ts uses. Whichever bundle initializes first creates the pool; the
+// other reuses it. A second independent pool would compete for the database's
+// connections and starve the Remix loaders, which is what produced the P2024
+// connection-pool timeouts. Keep this factory in sync with app/db.server.ts.
+declare global {
+  // eslint-disable-next-line no-var
+  var __db__: PrismaClient | undefined;
+}
+
+function getPrismaClient(): PrismaClient {
+  const databaseUrl = new URL(process.env.DATABASE_URL as string);
+  if (!databaseUrl.searchParams.has("connection_limit")) {
+    databaseUrl.searchParams.set(
+      "connection_limit",
+      process.env.DATABASE_CONNECTION_LIMIT ?? "10"
+    );
+  }
+  if (!databaseUrl.searchParams.has("pool_timeout")) {
+    databaseUrl.searchParams.set(
+      "pool_timeout",
+      process.env.DATABASE_POOL_TIMEOUT ?? "20"
+    );
+  }
+  const client = new PrismaClient({
+    datasources: { db: { url: databaseUrl.toString() } },
+  });
+  client.$connect();
+  return client;
+}
+
+if (!global.__db__) {
+  global.__db__ = getPrismaClient();
+}
+const prisma = global.__db__;
 
 // And then attach the socket.io server to the HTTP server
 const io = new Server(httpServer);
